@@ -257,7 +257,7 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                 .Select(s => new {
                         s.Id,
                         s.UserId,
-                        Role = s.User__r.RoleIdString,
+                        Role = s.User__r.RoleId,
                         Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
                         Phone = s.User__r.Phone,
                         Email = s.User__r.Email,
@@ -275,7 +275,7 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                 .Select(s => new {
                     s.Id,
                     s.UserId,
-                    Role = s.User__r.RoleIdString,
+                    Role = s.User__r.RoleId,
                     s.LevelId,
                     Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
                     Phone = s.User__r.Phone,

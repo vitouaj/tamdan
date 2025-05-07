@@ -16,7 +16,7 @@
             class="rounded-full w-48 h-48 mb-4 border-4 border-indigo-800 dark:border-blue-900 transition-transform duration-300 hover:scale-105"
           />
           <h1 class="text-2xl font-bold mb-2">{{ user?.name }}</h1>
-          <p class="">{{ user?.role }}</p>
+          <p class="">{{ ROLE_MAPPER[user?.role] }}</p>
           <span class="">{{ user?.subject }}</span>
         </div>
         <div class="col-span-1">
@@ -73,6 +73,7 @@ import { defineEmits, onMounted, ref } from "vue";
 import { type User } from "./Home.vue";
 import ContactForm from "./ContactForm.vue";
 import { ContactModel } from "./Auth.vue";
+import { ROLE_MAPPER } from "../api/utility";
 const emit = defineEmits(["goback"]);
 const props = defineProps({
   user: {

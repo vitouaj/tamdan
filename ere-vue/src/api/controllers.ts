@@ -2,6 +2,7 @@ import HttpClient from "./httpRequests";
 import router from "../router";
 import { RegisterModel } from "../pages/Auth.vue";
 import { notify } from "./utility";
+import { Course } from "../pages/ModalContent.vue";
 
 interface loginPayload {
   emailOrPhoneNumber: String;
@@ -37,6 +38,32 @@ async function getUser() {
     let errorPayload = e?.response?.data;
     toasterMessage = errorPayload?.message;
     router.push({ name: "auth" });
+    HttpClient.handleError(e);
+  }
+}
+
+async function createCourse(course: Course) {
+  try {
+    const response = await HttpClient.post({
+      path: "/api/v1.0/teacher/course",
+      payload: course,
+    });
+    console.log(response);
+    let data = response?.data;
+    let success = data?.success;
+    toasterMessage = data?.message;
+    toasterMessage = data?.message;
+    if (success) {
+      notify({
+        type: "type-success",
+        message: toasterMessage,
+      });
+    }
+    return data;
+  } catch (e) {
+    let errorPayload = e?.response?.data;
+    toasterMessage = errorPayload?.message;
+    HttpClient.handleError(e);
   }
 }
 
@@ -112,4 +139,4 @@ async function logout() {
   router.push({ name: "auth" });
 }
 
-export { getUser, login, logout, loadSubjectOptions, register };
+export { getUser, login, logout, loadSubjectOptions, register, createCourse };

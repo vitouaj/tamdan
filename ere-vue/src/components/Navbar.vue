@@ -54,7 +54,9 @@
               <h6 class="text-base-content text-base font-semibold">
                 {{ user?.name }}
               </h6>
-              <small class="text-base-content/50">{{ user?.role }}</small>
+              <small class="text-base-content/50">{{
+                ROLE_MAPPER[user?.role]
+              }}</small>
             </div>
           </li>
 
@@ -71,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from "vue";
+import { computed, PropType } from "vue";
 import { logout } from "../api/controllers";
 import { User } from "../pages/Home.vue";
+import { ROLE_MAPPER } from "../api/utility";
 
 const props = defineProps({
   user: {

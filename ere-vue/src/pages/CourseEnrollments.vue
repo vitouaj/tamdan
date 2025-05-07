@@ -19,12 +19,11 @@ const columns = [
 </script>
 
 <template>
-  <template v-if="enrollments.length > 0">
-    <p class="text-xl font-bold">My Courses</p>
-    <div class="datatable-action mt-6 mb-4 flex justify-end">
+  <template v-if="enrollments">
+    <p class="text-xl font-bold">Enrollments</p>
+    <div class="datatable-action mt-4 mb-2 flex justify-end">
       <button
         class="text-blue-500 border border-sm rounded border-blue-500 px-3 py-1 w-fit"
-        @click="getSelectedRows"
       >
         Enroll
       </button>

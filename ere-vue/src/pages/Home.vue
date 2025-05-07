@@ -13,7 +13,6 @@
             <AllReports v-if="mainReports" :reports="mainReports" />
           </template>
           <template v-if="showStudentList">
-            {{ user?.role }}
             <div class="grid grid-cols-2">
               <StudentCard
                 @gotostudentreportlist="fiterMainReports"
@@ -24,11 +23,17 @@
             </div>
           </template>
           <template v-if="showSchedules">
-            <Calendar v-if="courses" :courses="computedCourses" />
+            <Calendar v-if="courses" :courses="computedCoursesForSchedule" />
           </template>
           <template v-if="showCourseEnrollments">
-            <CourseList v-if="courses" :courses="courses" />
             <CourseEnrollments :enrollments="enrollments" />
+          </template>
+          <template v-if="showAllCourses">
+            <CourseList
+              v-if="courses"
+              :courses="computedCourses"
+              :user="user"
+            />
           </template>
           <template v-if="showProfile">
             <Profile :contacts="contacts" :user="user" @goback="handleGoTo" />
@@ -50,6 +55,11 @@ import CourseEnrollments from "./CourseEnrollments.vue";
 import Profile from "./Profile.vue";
 import StudentCard from "./StudentCard.vue";
 import CourseList from "./CourseList.vue";
+import {
+  DAY_OF_WEEK,
+  getCourseDayToDisplay,
+  getTimesDayToDisplay,
+} from "../api/utility";
 
 export interface User {
   name: string;
@@ -73,6 +83,62 @@ const showCourseEnrollments = ref(false);
 const showSchedules = ref(false);
 const showProfile = ref(false);
 const showStudentList = ref(false);
+const showAllCourses = ref(false);
+
+const user = ref<User>();
+const mainReportMap = ref({});
+const mainReports = ref([]);
+const enrollments = ref([]);
+const courses = ref([]);
+const contacts = ref([]);
+const students = ref([]);
+
+const computedCoursesForSchedule = computed(() => {
+  return [...courses.value];
+});
+
+const computedCourses = computed(() => {
+  return courses.value.map((item) => {
+    const courseDayDisplay = getCourseDayToDisplay(item?.courseDays);
+    const timesDayDisplay = getTimesDayToDisplay(item?.courseTimes);
+    return {
+      ...item,
+      courseDays: courseDayDisplay,
+      courseTimes: timesDayDisplay,
+    };
+  });
+});
+
+const isParent = computed(() => {
+  return user.value?.role == 3;
+});
+const isTeacher = computed(() => {
+  return user.value?.role == 2;
+});
+const isStudent = computed(() => {
+  return user.value?.role == 1;
+});
+
+onMounted(async () => {
+  let response = await getUser();
+  let payload = response?.payload;
+
+  user.value = payload?.user;
+  students.value = payload?.students;
+  contacts.value = payload?.contacts;
+  courses.value = payload?.courses;
+  mainReports.value = payload?.mainReport;
+  enrollments.value = payload?.enrollments;
+  mainReportMap.value = payload?.mainReportMap;
+
+  if (user.value?.role == 3) {
+    showStudentList.value = true;
+  } else if (user.value?.role == 2) {
+    showAllCourses.value = true;
+  } else if (user.value?.role == 1) {
+    showAllReports.value = true;
+  }
+});
 
 function resetViews() {
   showAllReports.value = false;
@@ -80,6 +146,7 @@ function resetViews() {
   showSchedules.value = false;
   showProfile.value = false;
   showStudentList.value = false;
+  showAllCourses.value = false;
 }
 
 function fiterMainReports(event: CustomEvent) {
@@ -94,7 +161,6 @@ function fiterMainReports(event: CustomEvent) {
 function handleGoTo(event: CustomEvent) {
   const cmp = event.detail?.cmpName;
   resetViews();
-
   switch (cmp) {
     case "home":
     case "allreports":
@@ -102,6 +168,9 @@ function handleGoTo(event: CustomEvent) {
       break;
     case "studentlist":
       showStudentList.value = true;
+      break;
+    case "courselist":
+      showAllCourses.value = true;
       break;
     case "schedules":
       showSchedules.value = true;
@@ -114,48 +183,4 @@ function handleGoTo(event: CustomEvent) {
       break;
   }
 }
-
-const user = ref<User>();
-const mainReportMap = ref({});
-const mainReports = ref([]);
-const enrollments = ref([]);
-const courses = ref([]);
-const contacts = ref([]);
-const students = ref([]);
-
-const computedCourses = computed(() => {
-  return [...courses.value];
-});
-
-const computedReports = computed(() => {
-  if (!mainReports.value || !Array.isArray(mainReports.value)) return [];
-  // Example transformation: group by monthId
-  return mainReports.value.map((report) => {
-    return {
-      ...report,
-      monthId: String(report.monthId),
-      status: report.status || "Pending",
-      className: "btn btn-primary",
-    };
-  });
-});
-
-onMounted(async () => {
-  let response = await getUser();
-
-  let payload = response?.payload;
-  user.value = payload?.user;
-
-  if (user.value?.role === 3 || user.value?.role === 2) {
-    students.value = payload?.students;
-    showStudentList.value = true;
-  } else {
-    showAllReports.value = true;
-  }
-  contacts.value = payload?.contacts;
-  courses.value = payload?.courses;
-  mainReports.value = payload?.mainReport;
-  enrollments.value = payload?.enrollments;
-  mainReportMap.value = payload?.mainReportMap;
-});
 </script>

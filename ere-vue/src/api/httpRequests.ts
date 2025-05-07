@@ -36,21 +36,23 @@ class HttpClient {
     try {
       return await axios(config);
     } catch (error) {
-      HttpClient.handleError(error);
+      this.handleError(error);
+      throw error;
     }
   }
 
-  private static handleError(error: unknown): void {
+  public static handleError(error: unknown): void {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
-        window.location.href = "/auth"; // redirect to login page
-        return;
+      if (axiosError) {
+        return notify({
+          message: `${axiosError?.message}: ${axiosError.response?.data?.message}`,
+        });
       }
-      notify({
-        message: `${axiosError.message}: ${axiosError.response?.data?.message}`,
-      });
     }
+    return notify({
+      message: `${error?.message}`,
+    });
   }
 
   static async get<T = any>(

@@ -24,7 +24,7 @@
   <template v-if="user.role == 2">
     <ul class="menu">
       <li>
-        <div @click="goTo" data-cmp="home">
+        <div @click="goTo" data-cmp="courselist">
           <span class="icon-[tabler--home] size-5"></span>
           Home
         </div>
@@ -44,7 +44,6 @@
     </ul>
   </template>
   <template v-if="user.role == 3">
-    {{ user.role }}
     <ul class="menu">
       <li>
         <div @click="goTo" data-cmp="studentlist">
