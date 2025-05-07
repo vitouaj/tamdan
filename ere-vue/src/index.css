@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "tailwindcss";
+@import "flyonui/src/vendor/notyf.css";
+
+.type-error {
+  max-width: 700px;
+  max-height: 800px;
+  background-color: rgb(212, 61, 61);
+}
+
+.type-success {
+  max-width: 700px;
+  max-height: 800px;
+  background-color: rgb(74, 196, 74);
+}
+
+.gray-out {
+  color: lightgray;
+}
