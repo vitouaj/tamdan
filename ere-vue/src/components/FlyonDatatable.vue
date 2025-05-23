@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="js">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import DataTable from "datatables.net-vue3";
 import DataTablesLib from "datatables.net";
 import "datatables.net-select";
@@ -38,13 +38,7 @@ const emit = defineEmits();
 
 onMounted(function () {
   dt = table.value.dt;
-  data.value = props.data.map((item) => ({
-    ...item,
-    enrollmentDate: new Date(item.enrollmentDate).toLocaleDateString(),
-    completionDate: item.completionDate
-      ? new Date(item.completionDate).toLocaleDateString()
-      : "In Progress",
-  }));
+  data.value = props.data;
 });
 
 function getSelectedRows() {
@@ -53,8 +47,16 @@ function getSelectedRows() {
   return selectedData;
 }
 
+function setData(newData) {
+  data.value = newData;
+  dt.clear().draw();
+  dt.rows.add(data.value); // Add new data
+  dt.columns.adjust().draw(); // Redraw the DataTable
+}
+
 defineExpose({
   getSelectedRows,
+  setData,
 });
 </script>
 

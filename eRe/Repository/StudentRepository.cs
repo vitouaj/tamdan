@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace ERE.Repository;
 public interface IStudentRepository {
     Task<Response> EnrollCourse(List<EnrollmentDto> requests);
+    Task<Response> GetAvailableCourses(string studentId);
     Task<Response> UnrollCourse(EnrollmentDto request);
     Task<Dictionary<string, List<MainReportDto>>> GetMainReports(GetMainReportDto request, Dictionary<string, string>? teacherDict);
     Task<Response> Feedback(ProvideFeedbackDto request);
@@ -193,6 +194,58 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
         await db.SaveChangesAsync();
         response.Payload = mainReport;
         response.Message = "Feedback provided successfully";
+        response.Success = true;
+        return response;
+    }
+
+    public async Task<Response> GetAvailableCourses(string studentId)
+    {
+        var response = new Response();
+        var student = db.Students
+            .Include(s => s.Courses)
+            .FirstOrDefault(s => s.Id == studentId);
+
+        var studentCourses = student.Courses.Select(c => c.Id).ToHashSet();
+        
+        if (student == null){
+            throw new StudentNotFoundException();
+        }
+        
+        var courses = await db.Courses
+            .Select(c => new {
+                Id = c.Id,
+                Subject = c.Teacher__r.Subject__r.Name,
+                LevelId = c.LevelId,
+                TeacherName = c.Teacher__r.Name,
+                MaxScore = c.MaxScore,
+                PassingRate = c.PassingRate,
+            })
+            .Where(c => c.LevelId == student.LevelId && !studentCourses.Contains(c.Id))
+            .ToListAsync();
+
+        var courseIds = courses.Select(c => c.Id).ToHashSet();
+        var courseHours = await db.OccupiedHours
+            .Where(oh => courseIds.Contains(oh.CourseId))
+            .Select(oh => new {
+                oh.CourseId,
+                oh.TimeOfDay,
+                oh.DayOfWeek
+            })
+            .ToListAsync();
+
+        var courseHoursDict = new Dictionary<string, List<Object>>();
+        foreach (var hour in courseHours) {
+            if (!courseHoursDict.ContainsKey(hour.CourseId)) {
+                courseHoursDict[hour.CourseId] = new List<Object>();
+            }
+            courseHoursDict[hour.CourseId].Add(hour);
+        }
+
+        response.Payload = new {
+            Courses = courses,
+            OccupiedHours = courseHoursDict
+        };
+        response.Message = "Available courses retrieved successfully";
         response.Success = true;
         return response;
     }

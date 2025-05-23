@@ -12,6 +12,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  occupiedHours: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 function renderCalendar(mapEvents) {
@@ -30,7 +34,8 @@ function renderCalendar(mapEvents) {
 }
 
 onMounted(() => {
-  let mapEvents = DateTimeUtility.mapEvents(props.courses);
+  let mapEvents = DateTimeUtility.mapEventsOccupiedHours(props.occupiedHours);
+  console.log("mapEvents", mapEvents);
   renderCalendar(mapEvents);
 });
 </script>

@@ -50,6 +50,23 @@ public static class StudentEndpoints
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
         });
+
+        app.MapGet("/available-course", [Authorize] async (IStudentRepository service, ClaimsPrincipal user) => {
+            var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var studentId = service.GetStudentId(identifier);
+            if (string.IsNullOrEmpty(identifier)) {
+                return Results.Unauthorized();
+            }    
+            var result = new Response();
+            try {
+                result = await service.GetAvailableCourses(studentId);
+            } catch (Exception ex) {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
+        });
+
         
     }
     public class EnrollmentDto {

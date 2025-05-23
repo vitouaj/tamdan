@@ -10,8 +10,8 @@ public class CreateCourseValidator : AbstractValidator<CreateCourseDto>
 {
     public CreateCourseValidator()
     {
-        RuleFor(x => x.TeacherId)
-            .NotEmpty().WithMessage("Teacher ID is required.");
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("User ID is required.");
 
         RuleFor(x => x.Level)
             .NotEmpty().WithMessage("Level is required.")

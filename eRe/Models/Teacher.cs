@@ -9,6 +9,7 @@ public class Teacher {
     public string Email {get; set;}
     public string Phone {get; set;}
     public string UserId {get; set;}
+    public List<OccupiedHour> OccupiedHours {get; set;} = new List<OccupiedHour>();
     public User User__r {get; set;} = null!;
     [JsonIgnore]
     public SubjectId SubjectId {get; private set;}
@@ -25,6 +26,7 @@ public class Teacher {
         SubjectId = subjectId;
         User__r = user;
         UserId = user.Id;
+        // Availabilities = populateDefaultAvailabilities(Id);
     }
 
     public Teacher(User user) {
@@ -33,7 +35,19 @@ public class Teacher {
         Phone = user.Phone;
         User__r = user;
         UserId = user.Id;
+        // Availabilities = populateDefaultAvailabilities(Id);
     }
     public Teacher() {
-     }
+        // Availabilities = populateDefaultAvailabilities(Id);
+    }
+
+    // private static List<Availability> populateDefaultAvailabilities(string teacherId) {
+    //     List<Availability> availabilities = new List<Availability>();
+    //     foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek))) {
+    //         foreach (TimeOfDay time in Enum.GetValues(typeof(TimeOfDay))) {
+    //             availabilities.Add(new Availability { TeacherId = teacherId, DayOfWeek = day, TimeOfDay = time });
+    //         }
+    //     }
+    //     return availabilities;
+    // }
 }

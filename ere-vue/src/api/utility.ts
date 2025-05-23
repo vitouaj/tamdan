@@ -43,6 +43,38 @@ class DateTimeUtility {
     return map;
   }
 
+  //   courseId
+  // :
+  // "5539a1f2-3d5d-4f5d-a332-1da3747961e6"
+  // dayOfWeek
+  // :
+  // 1
+  // enitityId
+  // :
+  // "00311fe0-71d4-44f8-beef-539bc1dd8bf0"
+  // id
+  // :
+  // "c6891a1b-cbff-4f25-ac1e-44c9be6ada19"
+  // timeOfDay
+  // :
+  // 7
+  static mapEventsOccupiedHours(occupiedHours: any[] = []) {
+    let events: Array<{ start: string; end: string }> = [];
+    for (const occupiedHour of occupiedHours) {
+      let courseTime = occupiedHour.timeOfDay;
+      let courseDay = occupiedHour.dayOfWeek;
+      let date = this.getWeekdayDateMap()[courseDay];
+      let event1 = this.TIME_OF_DAY_MAP[courseTime];
+      event1 = {
+        title: occupiedHour.courseId,
+        start: date + event1.start,
+        end: date + event1.end,
+      };
+      events.push(event1);
+    }
+    return events;
+  }
+
   static mapEvents(courses: any[] = []) {
     let events: Array<{ start: string; end: string }> = [];
     for (const course of courses) {
@@ -104,23 +136,23 @@ const LEVEL = {
   12: "Grade12",
 };
 
-function getCourseDayToDisplay(courseDays) {
-  let courseDayToDisplay = [];
-  for (let courseDay of courseDays) {
-    let csDay = DAY_OF_WEEK[courseDay];
-    courseDayToDisplay.push(csDay);
-  }
-  return courseDayToDisplay;
-}
+// function getCourseDayToDisplay(courseDays) {
+//   let courseDayToDisplay = [];
+//   for (let courseDay of courseDays) {
+//     let csDay = DAY_OF_WEEK[courseDay];
+//     courseDayToDisplay.push(csDay);
+//   }
+//   return courseDayToDisplay;
+// }
 
-function getTimesDayToDisplay(TimesDays) {
-  let TimesDayToDisplay = [];
-  for (let TimesDay of TimesDays) {
-    let csTime = TIMES_OF_DAY[TimesDay];
-    TimesDayToDisplay.push(csTime);
-  }
-  return TimesDayToDisplay;
-}
+// function getTimesDayToDisplay(TimesDays) {
+//   let TimesDayToDisplay = [];
+//   for (let TimesDay of TimesDays) {
+//     let csTime = TIMES_OF_DAY[TimesDay];
+//     TimesDayToDisplay.push(csTime);
+//   }
+//   return TimesDayToDisplay;
+// }
 
 function notify(option: NotifyOption) {
   const notyfDefault = new Notyf({
@@ -151,6 +183,6 @@ export {
   TIMES_OF_DAY,
   DAY_OF_WEEK,
   LEVEL,
-  getCourseDayToDisplay,
-  getTimesDayToDisplay,
+  // getCourseDayToDisplay,
+  // getTimesDayToDisplay,
 };

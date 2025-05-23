@@ -3,6 +3,7 @@ using System;
 using ERE.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace eRe.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250510033728_AddAvailability")]
+    partial class AddAvailability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,31 @@ namespace eRe.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ERE.Models.Availability", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TeacherId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TimeOfDay")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("Availabilities");
+                });
 
             modelBuilder.Entity("ERE.Models.Contact", b =>
                 {
@@ -88,6 +116,14 @@ namespace eRe.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
+
+                    b.Property<int[]>("CourseDays")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
+
+                    b.Property<int[]>("CourseTimes")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("LevelId")
                         .HasColumnType("integer");
@@ -284,38 +320,6 @@ namespace eRe.Migrations
                     b.HasAlternateKey("StudentId", "MonthId", "LevelId");
 
                     b.ToTable("MainReports");
-                });
-
-            modelBuilder.Entity("ERE.Models.OccupiedHour", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CourseId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("EnitityId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsStudent")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsTeacher")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("TimeOfDay")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EnitityId");
-
-                    b.ToTable("OccupiedHours");
                 });
 
             modelBuilder.Entity("ERE.Models.Parent", b =>
@@ -553,6 +557,15 @@ namespace eRe.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("ERE.Models.Availability", b =>
+                {
+                    b.HasOne("ERE.Models.Teacher", null)
+                        .WithMany("Availabilities")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERE.Models.Contact", b =>
                 {
                     b.HasOne("ERE.Models.Parent", null)
@@ -625,15 +638,6 @@ namespace eRe.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ERE.Models.OccupiedHour", b =>
-                {
-                    b.HasOne("ERE.Models.Teacher", null)
-                        .WithMany("OccupiedHours")
-                        .HasForeignKey("EnitityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ERE.Models.Parent", b =>
                 {
                     b.HasOne("ERE.Models.User", "User__r")
@@ -693,7 +697,7 @@ namespace eRe.Migrations
 
             modelBuilder.Entity("ERE.Models.Teacher", b =>
                 {
-                    b.Navigation("OccupiedHours");
+                    b.Navigation("Availabilities");
                 });
 #pragma warning restore 612, 618
         }

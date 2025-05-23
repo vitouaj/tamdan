@@ -23,7 +23,11 @@
             </div>
           </template>
           <template v-if="showSchedules">
-            <Calendar v-if="courses" :courses="computedCoursesForSchedule" />
+            <Calendar
+              v-if="courses"
+              :courses="computedCoursesForSchedule"
+              :occupiedHours="user?.occupiedHours"
+            />
           </template>
           <template v-if="showCourseEnrollments">
             <CourseEnrollments :enrollments="enrollments" />
@@ -33,6 +37,7 @@
               v-if="courses"
               :courses="computedCourses"
               :user="user"
+              :occupiedHours="user?.occupiedHours"
             />
           </template>
           <template v-if="showProfile">
@@ -57,9 +62,10 @@ import StudentCard from "./StudentCard.vue";
 import CourseList from "./CourseList.vue";
 import {
   DAY_OF_WEEK,
-  getCourseDayToDisplay,
-  getTimesDayToDisplay,
+  // getCourseDayToDisplay,
+  // getTimesDayToDisplay,
 } from "../api/utility";
+import { CourseHour } from "./ModalContent.vue";
 
 export interface User {
   name: string;
@@ -76,6 +82,7 @@ export interface User {
   totalScore: Number;
   overallGrade: string;
   averageScore: Number;
+  occupiedHours: Array<CourseHour>;
 }
 
 const showAllReports = ref(false);
@@ -99,12 +106,12 @@ const computedCoursesForSchedule = computed(() => {
 
 const computedCourses = computed(() => {
   return courses.value.map((item) => {
-    const courseDayDisplay = getCourseDayToDisplay(item?.courseDays);
-    const timesDayDisplay = getTimesDayToDisplay(item?.courseTimes);
+    // const courseDayDisplay = getCourseDayToDisplay(item?.courseDays);
+    // const timesDayDisplay = getTimesDayToDisplay(item?.courseTimes);
     return {
       ...item,
-      courseDays: courseDayDisplay,
-      courseTimes: timesDayDisplay,
+      // courseDays: courseDayDisplay,
+      // courseTimes: timesDayDisplay,
     };
   });
 });

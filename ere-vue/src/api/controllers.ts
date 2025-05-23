@@ -42,7 +42,7 @@ async function getUser() {
   }
 }
 
-async function createCourse(course: Course) {
+async function upsertCourse(course: any) {
   try {
     const response = await HttpClient.post({
       path: "/api/v1.0/teacher/course",
@@ -112,6 +112,43 @@ async function login(payload: loginPayload) {
   }
 }
 
+async function loadAvailableCourse() {
+  try {
+    const response = await HttpClient.get({
+      path: "/api/v1.0/student/available-course",
+    });
+    console.log(response);
+    let data = response?.data;
+    let success = data?.success;
+    toasterMessage = data?.message;
+    return data;
+  } catch (e) {
+    let errorPayload = e?.response?.data;
+    toasterMessage = errorPayload?.message;
+    router.push({ name: "auth" });
+  }
+}
+
+async function enroll(courseIds: Array<String>) {
+  try {
+    const response = await HttpClient.post({
+      path: "/api/v1.0/student/enroll",
+      payload: {
+        courseIds: courseIds,
+      },
+    });
+    console.log(response);
+    let data = response?.data;
+    let success = data?.success;
+    toasterMessage = data?.message;
+    return data;
+  } catch (e) {
+    let errorPayload = e?.response?.data;
+    toasterMessage = errorPayload?.message;
+    router.push({ name: "auth" });
+  }
+}
+
 async function register(payload: RegisterModel) {
   try {
     const response = await HttpClient.post({
@@ -139,4 +176,13 @@ async function logout() {
   router.push({ name: "auth" });
 }
 
-export { getUser, login, logout, loadSubjectOptions, register, createCourse };
+export {
+  getUser,
+  login,
+  logout,
+  loadSubjectOptions,
+  register,
+  upsertCourse,
+  loadAvailableCourse,
+  enroll,
+};

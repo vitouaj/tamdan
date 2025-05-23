@@ -8,6 +8,7 @@ using ERE.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static ERE.Models.Course;
 
 namespace ERE.APIS;
 
@@ -22,18 +23,17 @@ public static class TeacherEndpoints
                 return Results.Unauthorized();
             }
             DTO.CreateCourseDto courseToCreate = new DTO.CreateCourseDto() {
-                TeacherId = identifier,
+                UserId = identifier,
                 Level = request.Level,
                 MaxScore = request.MaxScore,
                 PassingRate = request.PassingRate,
-                DayOfWeeks = request.DayOfWeeks,
-                TimeOfDays = request.TimeOfDays
+                CourseHours = request.CourseHours,
             };
             
             var result = new Response();
             try {
-                validator.ValidateAndThrow(courseToCreate);
-                result = await service.CreateCourse(courseToCreate);
+                // validator.ValidateAndThrow(courseToCreate);
+                result = await service.UpsertCourse(courseToCreate);
             } catch (Exception ex) {
                 result.Success = false;
                 result.Message = ex.Message;
@@ -90,13 +90,28 @@ public static class TeacherEndpoints
         //         throw;
         //     }
         // });
+        // app.MapDelete("/course/{id}", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, string id) => {
+        //     // Validate the request
+        //     var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        //     if (string.IsNullOrEmpty(identifier)) {
+        //         return Results.Unauthorized();
+        //     }
+        //     var result = new Response();
+        //     try {
+        //         result = await service.RemoveCourse(id);
+        //     } catch (Exception ex) {
+        //         result.Success = false;
+        //         result.Message = ex.Message;
+        //     }
+        //     return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
+        // });
     }
 
     private class CreateCourseDto {
         public LevelId Level { get; set; }
         public float MaxScore { get; set; }
         public float PassingRate { get; set; }
-        public List<Models.DayOfWeek> DayOfWeeks {get; set;}
-        public List<TimeOfDay> TimeOfDays {get; set;}
+        public List<CourseHour> CourseHours {get; set;}
+        
     }
 }

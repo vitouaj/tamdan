@@ -7,6 +7,7 @@
 */
 
 using System.Text.Json.Serialization;
+using ERE.DTO;
 
 namespace ERE.Models;
 
@@ -24,8 +25,7 @@ public class Course {
 
     [JsonIgnore]
     public ICollection<Student> Students {get; set;} = new List<Student>();
-    public List<DayOfWeek> CourseDays {get; set;} = new List<DayOfWeek>();
-    public List<TimeOfDay> CourseTimes {get; set;} = new List<TimeOfDay>();
+    // public ICollection<CourseHour> CourseHours {get; set;} = new List<CourseHour>();
     public Course(Teacher teacher) {
         SubjectId = teacher.SubjectId;
         TeacherId = teacher.Id;

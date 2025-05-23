@@ -192,8 +192,7 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             var courses = await db.Courses
                 .Where(c => courseIds.Contains(c.Id))
                 .Select(c => new {
-                    c.CourseTimes,
-                    c.CourseDays,
+                    // c.CourseHours,
                     Level = c.LevelId.ToString(),
                     Subject = c.SubjectId.ToString(),
                     TeacherName = c.Teacher__r.Name
@@ -228,6 +227,13 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                     Email = s.User__r.Email,
                     CreatedAt = s.User__r.CreatedAt,
                     UpdatedAt = s.User__r.UpdatedAt,
+                    OccupiedHours = s.OccupiedHours.Select(h => new {
+                        h.Id,
+                        h.EnitityId,
+                        h.CourseId,
+                        h.DayOfWeek,
+                        h.TimeOfDay
+                    }).ToList()
                 })
                 .FirstOrDefaultAsync(t => t.UserId == user.Id);
 
@@ -235,8 +241,7 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                 .Where(c => c.TeacherId == teacher.Id)
                 .Select(c => new {
                     c.Id,
-                    c.CourseTimes,
-                    c.CourseDays,
+                    // c.CourseHours,
                     Level = c.LevelId.ToString(),
                     Subject = c.SubjectId.ToString(),
                     TeacherName = c.Teacher__r.Name

@@ -14,7 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CourseReport> CourseReports { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<MainReports> MainReports { get; set; }
-
+    public DbSet<OccupiedHour> OccupiedHours { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
         base.OnConfiguring(builder);
@@ -88,6 +88,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(r => r.Enrollment__r)
             .WithMany()
             .HasForeignKey(r => r.EnrollmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Teacher>()
+            .HasMany(t => t.OccupiedHours)
+            .WithOne()
+            .HasForeignKey(a => a.EnitityId)
             .OnDelete(DeleteBehavior.Cascade);
 
 
