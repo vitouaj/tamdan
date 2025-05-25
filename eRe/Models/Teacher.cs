@@ -26,7 +26,6 @@ public class Teacher {
         SubjectId = subjectId;
         User__r = user;
         UserId = user.Id;
-        // Availabilities = populateDefaultAvailabilities(Id);
     }
 
     public Teacher(User user) {
@@ -35,19 +34,7 @@ public class Teacher {
         Phone = user.Phone;
         User__r = user;
         UserId = user.Id;
-        // Availabilities = populateDefaultAvailabilities(Id);
     }
     public Teacher() {
-        // Availabilities = populateDefaultAvailabilities(Id);
     }
-
-    // private static List<Availability> populateDefaultAvailabilities(string teacherId) {
-    //     List<Availability> availabilities = new List<Availability>();
-    //     foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek))) {
-    //         foreach (TimeOfDay time in Enum.GetValues(typeof(TimeOfDay))) {
-    //             availabilities.Add(new Availability { TeacherId = teacherId, DayOfWeek = day, TimeOfDay = time });
-    //         }
-    //     }
-    //     return availabilities;
-    // }
 }

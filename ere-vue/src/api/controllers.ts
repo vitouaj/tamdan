@@ -2,7 +2,6 @@ import HttpClient from "./httpRequests";
 import router from "../router";
 import { RegisterModel } from "../pages/Auth.vue";
 import { notify } from "./utility";
-import { Course } from "../pages/ModalContent.vue";
 
 interface loginPayload {
   emailOrPhoneNumber: String;
@@ -15,159 +14,119 @@ interface loginPayload {
   ipAddress?: String;
 }
 
-let toasterMessage = "";
-
-async function getUser() {
+async function getUser(showToast: Boolean) {
   try {
     const response = await HttpClient.get({
       path: "/api/v1.0/user/me",
     });
-    console.log(response);
     let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
-    toasterMessage = data?.message;
-    if (success) {
-      notify({
-        type: "type-success",
-        message: toasterMessage,
-      });
-    }
     return data;
   } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
     router.push({ name: "auth" });
-    HttpClient.handleError(e);
   }
 }
 
 async function upsertCourse(course: any) {
-  try {
-    const response = await HttpClient.post({
-      path: "/api/v1.0/teacher/course",
-      payload: course,
+  const response = await HttpClient.post({
+    path: "/api/v1.0/teacher/course",
+    payload: course,
+  });
+  let data = response?.data;
+  let success = data?.success;
+  let toasterMessage = data?.message;
+  if (success) {
+    notify({
+      type: "type-success",
+      message: toasterMessage,
     });
-    console.log(response);
-    let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
-    toasterMessage = data?.message;
-    if (success) {
-      notify({
-        type: "type-success",
-        message: toasterMessage,
-      });
-    }
-    return data;
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
-    HttpClient.handleError(e);
   }
+  return data;
 }
 
 async function loadSubjectOptions() {
-  try {
-    const response = await HttpClient.get({
-      path: "/api/v1.0/user/static-options",
-    });
-    console.log(response);
-    let data = response?.data;
-    let success = data?.success;
-
-    toasterMessage = data?.message;
-    if (success) {
-      // notify({
-      //   type: "type-success",
-      //   message: toasterMessage,
-      // });
-    }
-    return data;
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
-    router.push({ name: "auth" });
-  }
+  const response = await HttpClient.get({
+    path: "/api/v1.0/user/static-options",
+  });
+  return response?.data;
 }
 
 async function login(payload: loginPayload) {
-  try {
-    const response = await HttpClient.post({
-      path: "/api/v1.0/user/login",
-      payload: payload,
-    });
-    let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
-    if (success) {
-      let token = data?.payload?.token;
-      window.sessionStorage.setItem("ere-token", token);
-      // redirect to home
-      return router.push({ name: "home" });
-    }
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
+  const response = await HttpClient.post({
+    path: "/api/v1.0/user/login",
+    payload: payload,
+  });
+  let data = response?.data;
+  let success = data?.success;
+  if (success) {
+    let token = data?.payload?.token;
+    window.sessionStorage.setItem("ere-token", token);
+    return router.push({ name: "home" });
   }
 }
 
 async function loadAvailableCourse() {
-  try {
-    const response = await HttpClient.get({
-      path: "/api/v1.0/student/available-course",
-    });
-    console.log(response);
-    let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
+  const response = await HttpClient.get({
+    path: "/api/v1.0/student/available-course",
+  });
+  let data = response?.data;
+  let success = data?.success;
+  if (success) {
     return data;
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
-    router.push({ name: "auth" });
   }
 }
 
 async function enroll(courseIds: Array<String>) {
-  try {
-    const response = await HttpClient.post({
-      path: "/api/v1.0/student/enroll",
-      payload: {
-        courseIds: courseIds,
-      },
+  const response = await HttpClient.post({
+    path: "/api/v1.0/student/enroll",
+    payload: {
+      courseIds: courseIds,
+    },
+  });
+  let data = response?.data;
+  let success = data?.success;
+  let toasterMessage = data?.message;
+  if (success) {
+    notify({
+      type: "type-success",
+      message: toasterMessage,
     });
-    console.log(response);
-    let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
     return data;
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
-    router.push({ name: "auth" });
+  }
+}
+
+async function deleteCourses(courseIds: Array<String>) {
+  const response = await HttpClient.delete({
+    path: "/api/v1.0/teacher/course",
+    payload: {
+      courseIds: courseIds,
+    },
+  });
+  let data = response?.data;
+  let success = data?.success;
+  let toasterMessage = data?.message;
+  if (success) {
+    notify({
+      type: "type-success",
+      message: toasterMessage,
+    });
+    return data;
   }
 }
 
 async function register(payload: RegisterModel) {
-  try {
-    const response = await HttpClient.post({
-      path: "/api/v1.0/user/register",
-      payload: payload,
+  const response = await HttpClient.post({
+    path: "/api/v1.0/user/register",
+    payload: payload,
+  });
+  let data = response?.data;
+  let success = data?.success;
+  let toasterMessage = data?.message;
+  if (success) {
+    notify({
+      type: "type-success",
+      message: toasterMessage,
     });
-    let data = response?.data;
-    let success = data?.success;
-    toasterMessage = data?.message;
-    if (success) {
-      notify({
-        type: "type-success",
-        message: toasterMessage,
-      });
-      return data;
-    }
-  } catch (e) {
-    let errorPayload = e?.response?.data;
-    toasterMessage = errorPayload?.message;
+    return data;
   }
 }
 
@@ -185,4 +144,5 @@ export {
   upsertCourse,
   loadAvailableCourse,
   enroll,
+  deleteCourses,
 };

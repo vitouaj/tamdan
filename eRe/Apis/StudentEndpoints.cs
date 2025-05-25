@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using ERE.CustomExceptions;
 using ERE.DTO;
 using ERE.Repository;
 using ERE.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ERE.APIS;
 
@@ -14,21 +16,23 @@ public static class StudentEndpoints
         app.MapPost("/enroll", [Authorize] async (IStudentRepository service, ClaimsPrincipal user, EnrollmentValidator validator, EnrollmentDto request) => {
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var studentId = service.GetStudentId(identifier);
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
                 return Results.Unauthorized();
-            }    
+            
             var result = new Response();
-            var temps = new List<DTO.EnrollmentDto>();
+            var enrollmentDtos = new List<DTO.EnrollmentDto>();
             try {
+                if (request.CourseIds.IsNullOrEmpty())
+                    throw new CourseNotFoundException();
                 foreach (var courseId in request.CourseIds) {
                     var enrollment = new DTO.EnrollmentDto() {
                         StudentId = studentId,
                         CourseId = courseId
                     };
-                    temps.Add(enrollment);
+                    enrollmentDtos.Add(enrollment);
                     // validator.ValidateAndThrow(request);
                 }
-                result = await service.EnrollCourse(temps);
+                result = await service.EnrollCourse(enrollmentDtos);
             } catch (Exception ex) {
                 result.Success = false;
                 result.Message = ex.Message;

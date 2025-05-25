@@ -25,17 +25,24 @@
           <template v-if="showSchedules">
             <Calendar
               v-if="courses"
+              :isTeacher="isTeacher"
               :courses="computedCoursesForSchedule"
               :occupiedHours="user?.occupiedHours"
             />
           </template>
           <template v-if="showCourseEnrollments">
-            <CourseEnrollments :enrollments="enrollments" />
+            <CourseEnrollments
+              @refreshHomeViewData="refreshHomeViewData"
+              :enrollments="enrollments"
+            />
           </template>
           <template v-if="showAllCourses">
-            <CourseList
+            <TeacherCourseList
               v-if="courses"
-              :courses="computedCourses"
+              @goback="handleGoTo"
+              @refreshHomeViewData="refreshHomeViewData"
+              :enrollments="enrollments"
+              :courses="computedCoursesDataTable"
               :user="user"
               :occupiedHours="user?.occupiedHours"
             />
@@ -59,9 +66,10 @@ import Calendar from "./Calendar.vue";
 import CourseEnrollments from "./CourseEnrollments.vue";
 import Profile from "./Profile.vue";
 import StudentCard from "./StudentCard.vue";
-import CourseList from "./CourseList.vue";
+import TeacherCourseList from "./TeacherCourseList.vue";
 import {
   DAY_OF_WEEK,
+  Utility,
   // getCourseDayToDisplay,
   // getTimesDayToDisplay,
 } from "../api/utility";
@@ -104,14 +112,13 @@ const computedCoursesForSchedule = computed(() => {
   return [...courses.value];
 });
 
-const computedCourses = computed(() => {
+const computedCoursesDataTable = computed(() => {
   return courses.value.map((item) => {
-    // const courseDayDisplay = getCourseDayToDisplay(item?.courseDays);
-    // const timesDayDisplay = getTimesDayToDisplay(item?.courseTimes);
     return {
       ...item,
-      // courseDays: courseDayDisplay,
-      // courseTimes: timesDayDisplay,
+      subject: Utility.allCapsToPascalCase(item.subject),
+      level: Utility.allCapsToPascalCase(item.level),
+      teacherName: Utility.allCapsToPascalCase(item.teacherName),
     };
   });
 });
@@ -127,9 +134,12 @@ const isStudent = computed(() => {
 });
 
 onMounted(async () => {
-  let response = await getUser();
-  let payload = response?.payload;
+  await initHomeData(false);
+});
 
+async function initHomeData(isRefresh: Boolean) {
+  let response = isRefresh ? await getUser(false) : await getUser(true);
+  let payload = response?.payload;
   user.value = payload?.user;
   students.value = payload?.students;
   contacts.value = payload?.contacts;
@@ -137,16 +147,17 @@ onMounted(async () => {
   mainReports.value = payload?.mainReport;
   enrollments.value = payload?.enrollments;
   mainReportMap.value = payload?.mainReportMap;
-
-  if (user.value?.role == 3) {
-    showStudentList.value = true;
-  } else if (user.value?.role == 2) {
-    showAllCourses.value = true;
-  } else if (user.value?.role == 1) {
-    showAllReports.value = true;
+  if (isRefresh !== undefined && !isRefresh) {
+    resetViews();
+    if (user.value?.role == 3) {
+      showStudentList.value = true;
+    } else if (user.value?.role == 2) {
+      showAllCourses.value = true;
+    } else if (user.value?.role == 1) {
+      showAllReports.value = true;
+    }
   }
-});
-
+}
 function resetViews() {
   showAllReports.value = false;
   showCourseEnrollments.value = false;
@@ -154,6 +165,10 @@ function resetViews() {
   showProfile.value = false;
   showStudentList.value = false;
   showAllCourses.value = false;
+}
+
+async function refreshHomeViewData() {
+  await initHomeData(true);
 }
 
 function fiterMainReports(event: CustomEvent) {
@@ -168,26 +183,28 @@ function fiterMainReports(event: CustomEvent) {
 function handleGoTo(event: CustomEvent) {
   const cmp = event.detail?.cmpName;
   resetViews();
-  switch (cmp) {
-    case "home":
-    case "allreports":
-      showAllReports.value = true;
-      break;
-    case "studentlist":
-      showStudentList.value = true;
-      break;
-    case "courselist":
-      showAllCourses.value = true;
-      break;
-    case "schedules":
-      showSchedules.value = true;
-      break;
-    case "course-enrollments":
-      showCourseEnrollments.value = true;
-      break;
-    case "me":
-      showProfile.value = true;
-      break;
-  }
+  setTimeout(() => {
+    switch (cmp) {
+      case "home":
+      case "allreports":
+        showAllReports.value = true;
+        break;
+      case "studentlist":
+        showStudentList.value = true;
+        break;
+      case "teachercourselist":
+        showAllCourses.value = true;
+        break;
+      case "schedules":
+        showSchedules.value = true;
+        break;
+      case "course-enrollments":
+        showCourseEnrollments.value = true;
+        break;
+      case "me":
+        showProfile.value = true;
+        break;
+    }
+  }, 200);
 }
 </script>

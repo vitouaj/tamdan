@@ -1,8 +1,8 @@
 <template>
-  <span
+  <!-- <span
     @click="emit('goback', { detail: { cmpName: 'home' } })"
     class="icon-[tabler--arrow-back-up] size-8"
-  ></span>
+  ></span> -->
 
   <div
     class="max-w-4xl w-full mx-auto p-8 transition-all duration-300 animate-fade-in"

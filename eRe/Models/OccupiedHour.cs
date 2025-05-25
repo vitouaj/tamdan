@@ -8,7 +8,7 @@ public class OccupiedHour {
     public string EnitityId {get; set;} = null!;
     public string CourseId {get; set;} = null!;
     // public AvailabilityStatus Status {get; set;} = AvailabilityStatus.AVAILABLE;
-    public DayOfWeek DayOfWeek {get; set;} 
+    public DayOfWeek DayOfWeek { get; set; } 
     public TimeOfDay TimeOfDay {get; set;}
 
 

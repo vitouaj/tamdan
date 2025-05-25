@@ -42,17 +42,19 @@ class HttpClient {
   }
 
   public static handleError(error: unknown): void {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      if (axiosError) {
-        return notify({
-          message: `${axiosError?.message}: ${axiosError.response?.data?.message}`,
-        });
+    const axiosError = error as AxiosError;
+    if (axiosError) {
+      let status = axiosError?.status;
+      let message = "Invalid Session";
+      if (status !== 401) {
+        message = axiosError.response?.data?.message;
       }
+      return notify({
+        message: message,
+        stack: `${axiosError?.stack}`,
+        duration: 5000,
+      });
     }
-    return notify({
-      message: `${error?.message}`,
-    });
   }
 
   static async get<T = any>(

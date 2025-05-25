@@ -90,21 +90,21 @@ public static class TeacherEndpoints
         //         throw;
         //     }
         // });
-        // app.MapDelete("/course/{id}", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, string id) => {
-        //     // Validate the request
-        //     var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        //     if (string.IsNullOrEmpty(identifier)) {
-        //         return Results.Unauthorized();
-        //     }
-        //     var result = new Response();
-        //     try {
-        //         result = await service.RemoveCourse(id);
-        //     } catch (Exception ex) {
-        //         result.Success = false;
-        //         result.Message = ex.Message;
-        //     }
-        //     return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
-        // });
+        app.MapDelete("/course", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, [FromBody] DeleteCourseDto toDeleteCourseIds) => {
+            // Validate the request
+            var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(identifier)) {
+                return Results.Unauthorized();
+            }
+            var result = new Response();
+            try {
+                result = await service.DeleteCourse(toDeleteCourseIds);
+            } catch (Exception ex) {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
+        });
     }
 
     private class CreateCourseDto {

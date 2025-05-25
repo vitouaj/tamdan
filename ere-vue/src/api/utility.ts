@@ -1,6 +1,6 @@
 import { Notyf } from "notyf";
 
-class DateTimeUtility {
+class Utility {
   private static today = Date.now();
 
   public static TIME_OF_DAY_MAP = {
@@ -58,21 +58,35 @@ class DateTimeUtility {
   // timeOfDay
   // :
   // 7
-  static mapEventsOccupiedHours(occupiedHours: any[] = []) {
+  static mapEventsOccupiedHours(
+    occupiedHours: any[] = [],
+    isTeacher: boolean = false
+  ) {
     let events: Array<{ start: string; end: string }> = [];
     for (const occupiedHour of occupiedHours) {
-      let courseTime = occupiedHour.timeOfDay;
-      let courseDay = occupiedHour.dayOfWeek;
+      let courseTime = occupiedHour?.timeOfDay;
+      let courseDay = occupiedHour?.dayOfWeek;
+      let course = occupiedHour?.course;
       let date = this.getWeekdayDateMap()[courseDay];
       let event1 = this.TIME_OF_DAY_MAP[courseTime];
       event1 = {
-        title: occupiedHour.courseId,
+        title: isTeacher
+          ? this.allCapsToPascalCase(course?.level)
+          : this.allCapsToPascalCase(course?.subject),
         start: date + event1.start,
         end: date + event1.end,
       };
       events.push(event1);
     }
     return events;
+  }
+
+  static allCapsToPascalCase(str) {
+    return str
+      .toLowerCase()
+      .split(/[_\s-]+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join("");
   }
 
   static mapEvents(courses: any[] = []) {
@@ -85,7 +99,7 @@ class DateTimeUtility {
         for (const courseTime of courseTimes) {
           let event1 = this.TIME_OF_DAY_MAP[courseTime];
           event1 = {
-            title: course.subject,
+            title: this.allCapsToPascalCase(course.subject),
             start: date + event1.start,
             end: date + event1.end,
           };
@@ -161,9 +175,12 @@ function notify(option: NotifyOption) {
       y: "top",
     },
   });
+
+  const htmlMessage = `${option.message}<br><small style="color: #ccc;">${option.stack}</small>`;
+
   notyfDefault.open({
     className: option.type || "type-error",
-    message: option.message,
+    message: htmlMessage,
     duration: option.duration || 3000,
     ripple: true,
     dismissible: true,
@@ -173,11 +190,12 @@ function notify(option: NotifyOption) {
 interface NotifyOption {
   type?: string;
   message: string;
+  stack?: string;
   duration?: number;
 }
 
 export {
-  DateTimeUtility,
+  Utility,
   notify,
   ROLE_MAPPER,
   TIMES_OF_DAY,

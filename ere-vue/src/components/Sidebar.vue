@@ -24,7 +24,7 @@
   <template v-if="user.role == 2">
     <ul class="menu">
       <li>
-        <div @click="goTo" data-cmp="courselist">
+        <div @click="goTo" data-cmp="teachercourselist">
           <span class="icon-[tabler--home] size-5"></span>
           Home
         </div>
@@ -35,12 +35,12 @@
           Schedules
         </div>
       </li>
-      <li>
+      <!-- <li>
         <div @click="goTo" data-cmp="course-enrollments">
           <span class="icon-[tabler--report] size-5"></span>
           Course Enrollments (For teacher)
         </div>
-      </li>
+      </li> -->
     </ul>
   </template>
   <template v-if="user.role == 3">

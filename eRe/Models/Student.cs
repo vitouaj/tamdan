@@ -11,6 +11,7 @@ public class Student {
     public string UserId {get; set;}
     public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
     public DateTime UpdatedAt {get; set;} = DateTime.UtcNow;
+    // public List<OccupiedHour> OccupiedHours {get; set;} = new List<OccupiedHour>();
     
     [JsonIgnore]
     public User User__r {get; set;} = null!;

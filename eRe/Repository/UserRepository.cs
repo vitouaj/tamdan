@@ -24,16 +24,18 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
     public async Task<Response> CreateUser(RegisterRequestDto request)
     {
         var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.Phone == request.Phone);
-        if (existingUser != null) {
+        if (existingUser != null)
+        {
             throw new UserAlreadyExistException();
         }
 
         Response response = new Response();
         RoleId userRole = (RoleId)request.Role;
         SubjectId subjectId = (SubjectId)request?.Subject;
-       
+
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        var user = new User {
+        var user = new User
+        {
             Firstname = request.FirstName,
             Lastname = request.LastName,
             Email = request.Email,
@@ -44,26 +46,32 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
 
         // create Teacher | Student | Parent record for this user
         using var transaction = await db.Database.BeginTransactionAsync();
-        try {
-            switch (userRole) {
+        try
+        {
+            switch (userRole)
+            {
                 case RoleId.STUDENT:
                     var student = new Student(user);
                     student.LevelId = (LevelId)request.LevelId;
                     var parents = new List<Parent>();
-                    var users = new List<User>(){user};
+                    var users = new List<User>() { user };
                     var contactRecords = new List<Contact>();
-                    
+
                     var contactPhones = request.Contacts.Select(c => c.Phone).ToList(); // request
                     var existingParents = await db.Parents
                         .Where(u => contactPhones.Contains(u.Phone))
                         .ToListAsync();
                     var existingParentPhones = existingParents.Select(c => c.Phone).ToList();
-                    
 
-                    if (!contactPhones.IsNullOrEmpty()) {
-                        foreach (var contact in request.Contacts) {
-                            if (!existingParentPhones.Contains(contact.Phone)) {
-                                var parentUser = new User {
+
+                    if (!contactPhones.IsNullOrEmpty())
+                    {
+                        foreach (var contact in request.Contacts)
+                        {
+                            if (!existingParentPhones.Contains(contact.Phone))
+                            {
+                                var parentUser = new User
+                                {
                                     Firstname = contact.FirstName,
                                     Lastname = contact.LastName,
                                     Email = contact.Email,
@@ -75,7 +83,8 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                                 var parent = new Parent(parentUser);
                                 parents.Add(parent);
 
-                                var cont = new Contact {
+                                var cont = new Contact
+                                {
                                     ParentId = parent.Id,
                                     StudentId = student.Id,
                                     FirstName = contact.FirstName,
@@ -90,10 +99,13 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                                     Province = contact.Province,
                                 };
                                 contactRecords.Add(cont);
-                            } else {
+                            }
+                            else
+                            {
                                 var existingParent = existingParents.FirstOrDefault(u => u.Phone == contact.Phone);
 
-                                var cont = new Contact {
+                                var cont = new Contact
+                                {
                                     ParentId = existingParent.Id,
                                     StudentId = student.Id,
                                     FirstName = contact.FirstName,
@@ -115,10 +127,11 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                     db.AddRange(parents);
                     db.AddRange(contactRecords);
                     db.Add(student);
-                    response.Payload = new { 
-                        user = student, 
-                        contacts = contactRecords, 
-                     };
+                    response.Payload = new
+                    {
+                        user = student,
+                        contacts = contactRecords,
+                    };
                     break;
                 case RoleId.TEACHER:
                     var teacher = new Teacher(user, subjectId);
@@ -133,51 +146,57 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             response.Success = true;
             response.Message = "User created successfully";
             return response;
-        } catch {
+        }
+        catch
+        {
             await transaction.RollbackAsync();
             throw;
-        } 
+        }
     }
     public Task<Response> Login(LoginRequestDto request)
     {
         Response response = new Response();
         var user = db.Users.FirstOrDefault(u => u.Email == request.EmailOrPhoneNumber || u.Phone == request.EmailOrPhoneNumber);
-        if (user == null) {
+        if (user == null)
+        {
             throw new InvalidLoginException();
         }
         // null check if user.password
         Boolean isValidPassword = false;
-        if (!string.IsNullOrEmpty(user.Password)) {
+        if (!string.IsNullOrEmpty(user.Password))
+        {
             isValidPassword = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
         }
-        if (!isValidPassword && user.DefaultPassword != request.Password) {
+        if (!isValidPassword && user.DefaultPassword != request.Password)
+        {
             throw new InvalidLoginException();
         }
 
         response.Success = true;
-        response.Payload = new {
+        response.Payload = new
+        {
             token = utility.GenerateJwtToken(user),
         };
         response.Message = "Login successful";
         return Task.FromResult(response);
     }
-    public async Task<Response> GetUser(string identifier) 
+    public async Task<Response> GetUser(string identifier)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == identifier || u.Phone == identifier || u.Id == identifier);
-        if (user == null) {
+        if (user == null)
             throw new StudentNotFoundException();
-        }
         var response = new Response();
-        if (user.RoleId == RoleId.STUDENT) {
+        if (user.RoleId == RoleId.STUDENT)
+        {
             var getMainReportDto = new GetMainReportDto();
-
             var student = await db.Students
                 .Include(s => s.User__r)
-                .Select(s => new {
-                    s.Id,
-                    s.UserId,
+                .Select(s => new RUserDto
+                {
+                    Id = s.Id,
+                    UserId = s.UserId,
                     Role = s.User__r.RoleId,
-                    s.LevelId,
+                    LevelId = s.LevelId,
                     Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
                     Phone = s.User__r.Phone,
                     Email = s.User__r.Email,
@@ -189,15 +208,31 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             var enrollments = await db.Enrollments.Where(er => er.StudentId == student.Id).ToListAsync();
             var teacherIds = enrollments.Select(er => er.TeacherId).ToList();
             var courseIds = enrollments.Select(er => er.CourseId).ToList();
-            var courses = await db.Courses
+            var courseMap = await db.Courses
                 .Where(c => courseIds.Contains(c.Id))
-                .Select(c => new {
-                    // c.CourseHours,
+                .Include(c => c.Teacher__r)
+                .ToDictionaryAsync(c => c.Id, c => new RCourseDto
+                {
+                    Id = c.Id,
                     Level = c.LevelId.ToString(),
                     Subject = c.SubjectId.ToString(),
                     TeacherName = c.Teacher__r.Name
+                });
+
+            var occupiedHours = await db.OccupiedHours
+                .Where(o => courseIds.Contains(o.CourseId))
+                .Select(o => new OccupiedHourDto
+                {
+                    Id = o.Id,
+                    CourseId = o.CourseId,
+                    Course = courseMap[o.CourseId],
+                    TimeOfDay = o.TimeOfDay,
+                    DayOfWeek = o.DayOfWeek,
+                    EnitityId = o.EnitityId,
                 })
                 .ToListAsync();
+            if (student != null)
+                student.OccupiedHours = occupiedHours;
 
             var teacherMap = await db.Teachers
                 .Where(t => teacherIds.Contains(t.Id))
@@ -205,70 +240,92 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             // build teacherId, Subject map to display
 
             getMainReportDto.StudentIds = new List<string>() { student.Id };
-            var result = await studentService.GetMainReports(getMainReportDto, teacherMap); 
-            response.Payload = new {
+            var result = await studentService.GetMainReports(getMainReportDto, teacherMap);
+            response.Payload = new
+            {
                 User = student,
                 Contacts = contacts,
-                Courses = courses,
+                Courses = courseMap.Values,
                 Enrollments = enrollments,
-                MainReport = result.ContainsKey(student.Id) ? result[student.Id]: new List<DTO.MainReportDto>()
+                MainReport = result.ContainsKey(student.Id) ? result[student.Id] : new List<DTO.MainReportDto>()
             };
-        } 
-        else if (user.RoleId == RoleId.TEACHER) {
+        }
+        else if (user.RoleId == RoleId.TEACHER)
+        {
             var teacher = await db.Teachers
                 .Include(t => t.User__r)
-                .Select(s => new {
-                    s.Id,
-                    s.UserId,
+                .Select(s => new RUserDto
+                {
+                    Id = s.Id,
+                    UserId = s.UserId,
                     Subject = s.SubjectId.ToString(),
                     Role = s.User__r.RoleId,
                     Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
                     Phone = s.User__r.Phone,
                     Email = s.User__r.Email,
                     CreatedAt = s.User__r.CreatedAt,
-                    UpdatedAt = s.User__r.UpdatedAt,
-                    OccupiedHours = s.OccupiedHours.Select(h => new {
-                        h.Id,
-                        h.EnitityId,
-                        h.CourseId,
-                        h.DayOfWeek,
-                        h.TimeOfDay
-                    }).ToList()
+                    UpdatedAt = s.User__r.UpdatedAt
                 })
                 .FirstOrDefaultAsync(t => t.UserId == user.Id);
 
-            var courses = await db.Courses
+            var courseMap = await db.Courses
                 .Where(c => c.TeacherId == teacher.Id)
-                .Select(c => new {
-                    c.Id,
-                    // c.CourseHours,
+                .Include(c => c.Teacher__r)
+                .ToDictionaryAsync(c => c.Id, c => new RCourseDto
+                {
+                    Id = c.Id,
                     Level = c.LevelId.ToString(),
                     Subject = c.SubjectId.ToString(),
                     TeacherName = c.Teacher__r.Name
-                })
-                .ToListAsync();
-            // get courses with course enrollments
-            var courseIds = courses.Select(c => c.Id).ToArray();
-            var enrollments = await db.Enrollments.Where(e => courseIds.Contains(e.CourseId)).ToListAsync();
+                });
+            var courseIds = courseMap.Keys;
+            var occupiedHours = await db.OccupiedHours
+                .Where(o => o.EnitityId == teacher.Id)
+                .Select(h => new OccupiedHourDto
+                {
+                    Id = h.Id,
+                    EnitityId = h.EnitityId,
+                    Course = !courseMap.IsNullOrEmpty() ? courseMap[h.CourseId] : null,
+                    CourseId = h.CourseId,
+                    DayOfWeek = h.DayOfWeek,
+                    TimeOfDay = h.TimeOfDay
+                }).ToListAsync();
 
-            response.Payload = new {
+            if (teacher != null)
+                teacher.OccupiedHours = occupiedHours;
+            // get courses with course enrollments
+            var enrollments = await db.Enrollments
+                .Where(e => courseIds
+                .Contains(e.CourseId))
+                .ToDictionaryAsync(e => e.CourseId, e => new REnrollmentDto
+                {
+                    StudentName = e.StudentName,
+                    Level = e.LevelId.ToString(),
+                    EnrollmentDate = e.EnrollmentDate.ToString()
+                });
+
+
+            response.Payload = new
+            {
                 User = teacher,
-                Courses = courses,
-                enrollments
+                Courses = courseMap.Values,
+                enrollments = enrollments,
             };
-        } 
-        else if (user.RoleId == RoleId.PARENT) {
+        }
+        else if (user.RoleId == RoleId.PARENT)
+        {
             var parent = await db.Parents
-                .Select(s => new {
-                        s.Id,
-                        s.UserId,
-                        Role = s.User__r.RoleId,
-                        Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
-                        Phone = s.User__r.Phone,
-                        Email = s.User__r.Email,
-                        CreatedAt = s.User__r.CreatedAt,
-                        UpdatedAt = s.User__r.UpdatedAt,
-                    })
+                .Select(s => new
+                {
+                    s.Id,
+                    s.UserId,
+                    Role = s.User__r.RoleId,
+                    Name = s.User__r.Firstname + ' ' + s.User__r.Lastname,
+                    Phone = s.User__r.Phone,
+                    Email = s.User__r.Email,
+                    CreatedAt = s.User__r.CreatedAt,
+                    UpdatedAt = s.User__r.UpdatedAt,
+                })
                 .FirstOrDefaultAsync(t => t.UserId == user.Id);
 
             var contacts = await db.Contacts
@@ -277,7 +334,8 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             var studentIds = contacts.Select(c => c.StudentId).ToList();
             var students = await db.Students
                 .Include(s => s.User__r)
-                .Select(s => new {
+                .Select(s => new
+                {
                     s.Id,
                     s.UserId,
                     Role = s.User__r.RoleId,
@@ -294,7 +352,8 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             getMainReportDto.StudentIds = studentIds;
 
             var result = await studentService.GetMainReports(getMainReportDto, new Dictionary<string, string>());
-            response.Payload = new {
+            response.Payload = new
+            {
                 User = parent,
                 Students = students,
                 MainReportMap = result
@@ -302,15 +361,16 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
 
 
         }
-        
+
         response.Success = true;
-        response.Message = "Welcome " + user.Firstname + ' '+ user.Lastname + '!';
+        response.Message = "Welcome " + user.Firstname + ' ' + user.Lastname + '!';
         return response;
     }
     public async Task<Response> UpdateUser(string userId, UpdateUserDto request)
     {
         var user = db.Users.FirstOrDefault(u => u.Id == userId);
-        if (user == null) {
+        if (user == null)
+        {
             throw new KeyNotFoundException("User not found");
         }
         user.Firstname = request.FirstName;
@@ -331,7 +391,8 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
         var response = new Response();
         var subjectOptions = Enum.GetValues(typeof(SubjectId))
                         .Cast<SubjectId>()
-                        .Select(e => new {
+                        .Select(e => new
+                        {
                             Id = e,
                             Name = e.ToString()
                         })
@@ -340,21 +401,24 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
         var roleOptions = Enum.GetValues(typeof(RoleId))
                         .Cast<RoleId>()
                         .Where(r => r != RoleId.PARENT)
-                        .Select(r => new {
+                        .Select(r => new
+                        {
                             Id = r,
                             Name = r.ToString()
                         }).ToList();
 
-         var levelOptions = Enum.GetValues(typeof(LevelId))
-                        .Cast<LevelId>()
-                        .Select(e => new {
-                            Id = e,
-                            Name = e.ToString()
-                        })
-                        .ToList(); 
+        var levelOptions = Enum.GetValues(typeof(LevelId))
+                       .Cast<LevelId>()
+                       .Select(e => new
+                       {
+                           Id = e,
+                           Name = e.ToString()
+                       })
+                       .ToList();
 
         response.Message = "subject options retrived successfull";
-        response.Payload = new {
+        response.Payload = new
+        {
             roleOptions,
             subjectOptions,
             levelOptions
@@ -363,18 +427,21 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
         return response;
     }
 
-    class CourseReportDto {
+    class CourseReportDto
+    {
         public string Id { get; set; }
         public string MainReportId { get; set; }
         public string StatusId { get; set; }
-        public string TeacherName {get; set;}
+        public string TeacherName { get; set; }
         public float Score { get; set; }
-        public float Absences {get; set;}
+        public float Absences { get; set; }
 
         public string TeacherCmt { get; set; }
     }
 
-    class MainReportDto {
+    class MainReportDto
+    {
+
         public string Id { get; set; }
         public string StudentId { get; set; }
         public string StudentName { get; set; }
@@ -383,5 +450,46 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
         public LevelId LevelId { get; set; }
         public string Status { get; set; }
         public HashSet<CourseReportDto> CourseReports { get; set; }
+    }
+
+    class RUserDto
+    {
+        public string Id { get; set; }
+        public string UserId { get; set; }
+        public string Subject { get; set; }
+        public RoleId? Role { get; set; }
+        public LevelId? LevelId { get; set; }
+        public string Name { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public List<OccupiedHourDto> OccupiedHours { get; set; } // Your payload
+    }
+
+    class OccupiedHourDto
+
+    {
+        public string? Id { get; set; }
+        public string? EnitityId { get; set; }
+        public string? CourseId { get; set; }
+        public RCourseDto? Course { get; set; }
+        public Models.DayOfWeek DayOfWeek { get; set; }
+        public TimeOfDay TimeOfDay { get; set; }
+    }
+
+    class RCourseDto
+    {
+        public string? Id { get; set; }
+        public string? Level { get; set; }
+        public string? Subject { get; set; }
+        public string? TeacherName { get; set; }
+    }
+
+    class REnrollmentDto
+    {
+        public string? EnrollmentDate { get; set; }
+        public string? StudentName { get; set; }
+        public string? Level { get; set; }
     }
 }

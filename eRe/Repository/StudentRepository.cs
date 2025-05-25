@@ -21,46 +21,33 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
         var response = new Response();
         var studentIds = requests.Select(r => r.StudentId).ToHashSet();
         var courseIds = requests.Select(r => r.CourseId).ToHashSet();
-
         var students = await db.Students.Where(s => studentIds.Contains(s.Id)).ToListAsync();
         var courses = await db.Courses.Include(c => c.Teacher__r).Where(c => courseIds.Contains(c.Id)).ToListAsync();
-
         var foundStudentIds = students.Select(s => s.Id).ToHashSet();
         var foundCourseIds = courses.Select(c => c.Id).ToHashSet();
-
         var missingStudentIds = studentIds.Except(foundStudentIds).ToHashSet();
         var missingCourseIds = courseIds.Except(foundCourseIds).ToHashSet();
 
         if (missingStudentIds.Any())
             throw new StudentNotFoundException($"Students not found: {string.Join(", ", missingStudentIds)}");
-
         if (missingCourseIds.Any())
             throw new CourseNotFoundException($"Courses not found: {string.Join(", ", missingCourseIds)}");
-
         var existingEnrollments = await db.Enrollments
             .Where(e => studentIds.Contains(e.StudentId) && courseIds.Contains(e.CourseId))
             .ToListAsync();
-
         var validEnrollments = new List<Enrollment>();
-
         foreach (var request in requests) {
             var student = students.First(s => s.Id == request.StudentId);
             var course = courses.First(c => c.Id == request.CourseId);
-
             bool alreadyExists = existingEnrollments.Any(e =>
                 e.StudentId == request.StudentId && e.CourseId == request.CourseId);
-
-            if (alreadyExists) {
+            if (alreadyExists)
                 throw new EnrollmentAlreadyExistsException($"Student {request.StudentId} already enrolled in course {request.CourseId}");
-            }
-
             var newEnrollment = new Enrollment(student, course) {
                 EnrollmentDate = DateTime.UtcNow
             };
-
             validEnrollments.Add(newEnrollment);
         }
-
         db.Enrollments.AddRange(validEnrollments);
         await db.SaveChangesAsync();
 
@@ -80,9 +67,8 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
         var enrollment = await db.Enrollments
             .FirstOrDefaultAsync(e => e.StudentId == request.StudentId && e.CourseId == request.CourseId);
         if (enrollment == null)
-        {
             throw new EnrollmentNotFoundException();
-        }
+        
         // delete enrollment
         db.Enrollments.Remove(enrollment);
         db.SaveChanges();
@@ -164,9 +150,9 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
             }
         }
 
-        if (studentMainReports.IsNullOrEmpty()) {
+        if (studentMainReports.IsNullOrEmpty())
             return new Dictionary<string, List<MainReportDto>>();
-        }
+        
         return studentMainReports;
     }
     public string GetStudentId(string userId)
@@ -206,10 +192,9 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
             .FirstOrDefault(s => s.Id == studentId);
 
         var studentCourses = student.Courses.Select(c => c.Id).ToHashSet();
-        
-        if (student == null){
+        if (student == null)
             throw new StudentNotFoundException();
-        }
+        
         
         var courses = await db.Courses
             .Select(c => new {

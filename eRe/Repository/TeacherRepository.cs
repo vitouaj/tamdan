@@ -12,8 +12,8 @@ namespace ERE.Repository;
 public interface ITeacherRepository
 {
     Task<Response> UpsertCourse(CreateCourseDto request);
+    Task<Response> DeleteCourse(DeleteCourseDto deleteDto);
     Task<Response> CreateCourseReport(CreateCourseReportDto request);
-    // Task<Response> RemoveCourse(string courseId);
     Task<Response> UpdateCourseReportsStatus(UpdateCourseReportStatusDto request);
     // Task<Response> SendCourseReportViaEmail(List<CourseReport> courseReports);
 
@@ -21,39 +21,7 @@ public interface ITeacherRepository
 public class TeacherRepository(AppDbContext context, IMailService mail_service) : ITeacherRepository
 {
     private readonly AppDbContext db = context;
-
     private readonly IMailService Mail_Service = mail_service;
-
-    // public async Task<Response> RemoveCourse(string courseId)
-    // {
-    //     var response = new Response();
-
-    //     using var transaction = await db.Database.BeginTransactionAsync();
-    //     var course = await db.Courses
-    //         .FirstOrDefaultAsync(c => c.Id == courseId);
-    //     if (course == null) {
-    //         throw new CourseNotFoundException();
-    //     }
-    //     // restore teacher availability
-    //     var availabilities = await db.Availabilities
-    //         .Where(a => a.TeacherId == course.TeacherId && a.CourseId == course.Id && a.Status == AvailabilityStatus.UNAVAILABLE)
-    //         .ToListAsync();
-
-    //     foreach (var availability in availabilities) {
-    //         if (availability.Status == AvailabilityStatus.UNAVAILABLE) {
-    //             availability.Status = AvailabilityStatus.AVAILABLE;
-    //         }
-    //     }
-    //     db.Availabilities.UpdateRange(availabilities);
-    //     // remove course
-    //     db.Courses.Remove(course);
-    //     await db.SaveChangesAsync();
-    //     await transaction.CommitAsync();
-    //     response.Message = "Course removed successfully";
-    //     response.Success = true;
-    //     return response;
-    // }
-
     public async Task<Response> UpsertCourse(CreateCourseDto request)
     {
         // check if teacher exists
@@ -259,24 +227,6 @@ public class TeacherRepository(AppDbContext context, IMailService mail_service) 
         return response;
     }
 
-// Check if teacher is available for the given days and times
-    // If the teacher is available, return null, otherwise return not available days and times
-    // private async Task<List<Availability>> getTeacherAvailability(string teacherId, List<Models.DayOfWeek> days, List<TimeOfDay> times) {
-    //     var teacherAvailability = await db.Availabilities
-    //         .Where(a => a.TeacherId == teacherId && a.Status == AvailabilityStatus.AVAILABLE)
-    //         .ToListAsync();
-        
-    //     var availabilitiesTeacherToUpdate = new List<Availability>();
-    //     foreach (var day in days) {
-    //         foreach (var time in times) {
-    //             var availability = teacherAvailability.FirstOrDefault(a => a.DayOfWeek == day && a.TimeOfDay == time); // contain
-    //             if (availability == null) throw new TeacherNotAvailableException($"Teacher is not available on {day.ToString()} at {time.ToString()}");    
-    //             availabilitiesTeacherToUpdate.Add(availability);
-    //         }
-    //     }
-    //     return availabilitiesTeacherToUpdate;
-    // }
-
     private ReportStatus RecalculateMainReportStatus(List<CourseReport> courseReports) {
         if (courseReports.IsNullOrEmpty()) {
             return ReportStatus.NOT_READY;
@@ -284,30 +234,51 @@ public class TeacherRepository(AppDbContext context, IMailService mail_service) 
         var allDone = courseReports.All(cr => cr.StatusId == StatusId.DONE);
         return allDone ? ReportStatus.READY : ReportStatus.NOT_READY;
     }
+
+    public async Task<Response> DeleteCourse(DeleteCourseDto deleteDto) {
+        Response response = new() { Success = false, Message = "Delete Failed" };
+        if (deleteDto != null)
+        {
+            var courseIds = deleteDto.CourseIds;
+            if (!courseIds.IsNullOrEmpty())
+            {
+                using var transaction = await db.Database.BeginTransactionAsync();
+                try
+                {
+                    var affectedRows = await db.Courses
+                        .Where(c => courseIds.Contains(c.Id))
+                        .ExecuteDeleteAsync();
+
+                    if (affectedRows != 0)
+                    {
+                        // find occupied hours and remove all
+                        var occAffectedRows = await db.OccupiedHours
+                            .Where(c => courseIds.Contains(c.CourseId))
+                            .ExecuteDeleteAsync();
+
+                        if (occAffectedRows != 0)
+                        {
+                            await transaction.CommitAsync();
+                            response.Success = true;
+                            response.Message = "Delete successfull!";
+                        }
+                    }
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+
+            }
+        }
+        return response;
+            
+    }
+
     class CourseReportDto {
         public string Id { get; set; }
         public StatusId StatusId { get; set; }
     }
 
-}
-
-[Serializable]
-internal class TeacherNotAvailableException : Exception
-{
-    public TeacherNotAvailableException()
-    {
-    }
-
-    public TeacherNotAvailableException(string? message) : base(message)
-    {
-    }
-
-    public TeacherNotAvailableException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-}
-
-public class UpdateCourseReportStatusDto {
-    public List<string> CourseReportIds { get; set; }
-    public ReportStatus Status { get; set; }
 }
