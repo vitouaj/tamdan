@@ -13,19 +13,23 @@ public static class StudentEndpoints
 {
     public static void MapStudentEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/enroll", [Authorize] async (IStudentRepository service, ClaimsPrincipal user, EnrollmentValidator validator, EnrollmentDto request) => {
+        app.MapPost("/enroll", [Authorize] async (IStudentRepository service, ClaimsPrincipal user, EnrollmentValidator validator, EnrollmentDto request) =>
+        {
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var studentId = service.GetStudentId(identifier);
             if (string.IsNullOrEmpty(identifier))
                 return Results.Unauthorized();
-            
+
             var result = new Response();
             var enrollmentDtos = new List<DTO.EnrollmentDto>();
-            try {
+            try
+            {
                 if (request.CourseIds.IsNullOrEmpty())
                     throw new CourseNotFoundException();
-                foreach (var courseId in request.CourseIds) {
-                    var enrollment = new DTO.EnrollmentDto() {
+                foreach (var courseId in request.CourseIds)
+                {
+                    var enrollment = new DTO.EnrollmentDto()
+                    {
                         StudentId = studentId,
                         CourseId = courseId
                     };
@@ -33,37 +37,65 @@ public static class StudentEndpoints
                     // validator.ValidateAndThrow(request);
                 }
                 result = await service.EnrollCourse(enrollmentDtos);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
         });
 
-        app.MapPatch("/comment", [Authorize] async (IStudentRepository service, ClaimsPrincipal user, ProvideFeedbackDto request) => {
+        app.MapPatch("/comment", [Authorize] async (IStudentRepository service, ClaimsPrincipal user, ProvideFeedbackDto request) =>
+        {
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return Results.Unauthorized();
-            }    
+            }
             var result = new Response();
-            try {
+            try
+            {
                 result = await service.Feedback(request);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
         });
 
-        app.MapGet("/available-course", [Authorize] async (IStudentRepository service, ClaimsPrincipal user) => {
+        app.MapGet("/available-course", [Authorize] async (IStudentRepository service, ClaimsPrincipal user) =>
+        {
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var studentId = service.GetStudentId(identifier);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return Results.Unauthorized();
+            }
+            var result = new Response();
+            try
+            {
+                result = await service.GetAvailableCourses(studentId);
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
+        });
+
+        app.MapGet("/enrollment", [Authorize] async (IStudentRepository service, ClaimsPrincipal user) => {
+            var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(identifier)) {
                 return Results.Unauthorized();
             }    
+            var studentId = service.GetStudentId(identifier);
             var result = new Response();
             try {
-                result = await service.GetAvailableCourses(studentId);
+                result = await service.GetMyEnrollments(studentId);
             } catch (Exception ex) {
                 result.Success = false;
                 result.Message = ex.Message;

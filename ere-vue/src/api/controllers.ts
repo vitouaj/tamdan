@@ -20,10 +20,18 @@ async function getUser(showToast: Boolean) {
       path: "/api/v1.0/user/me",
     });
     let data = response?.data;
+    console.log(data);
     return data;
   } catch (e) {
     router.push({ name: "auth" });
   }
+}
+
+async function getMyEnrollments() {
+  const response = await HttpClient.get({
+    path: "/api/v1.0/student/enrollment",
+  });
+  return response?.data;
 }
 
 async function upsertCourse(course: any) {
@@ -71,6 +79,25 @@ async function loadAvailableCourse() {
   let data = response?.data;
   let success = data?.success;
   if (success) {
+    return data;
+  }
+}
+
+async function handleApproveRequestedEnrollments(enrollmentIds: Array<string>) {
+  const response = await HttpClient.put({
+    path: "/api/v1.0/teacher/enrollments",
+    payload: {
+      enrollmentIds: enrollmentIds,
+    },
+  });
+  let data = response?.data;
+  let success = data?.success;
+  let toasterMessage = data?.message;
+  if (success) {
+    notify({
+      type: "type-success",
+      message: toasterMessage,
+    });
     return data;
   }
 }
@@ -138,6 +165,8 @@ async function logout() {
 export {
   getUser,
   login,
+  getMyEnrollments,
+  handleApproveRequestedEnrollments,
   logout,
   loadSubjectOptions,
   register,

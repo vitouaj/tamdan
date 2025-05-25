@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import FlyonDatatable from "../components/FlyonDatatable.vue";
 import { computed, onMounted, ref, toRaw } from "vue";
-import { deleteCourses, upsertCourse } from "../api/controllers";
+import {
+  deleteCourses,
+  handleApproveRequestedEnrollments,
+  upsertCourse,
+} from "../api/controllers";
 import Loading from "./Loading.vue";
-import { DAY_OF_WEEK, TIMES_OF_DAY, LEVEL } from "../api/utility";
+import { DAY_OF_WEEK, TIMES_OF_DAY, LEVEL, notify } from "../api/utility";
 import CModal from "../components/Modals/CModal.vue";
 
 const columns = [
@@ -16,6 +20,7 @@ const courseEnrollmentDetail = [
   { data: "studentName", title: "Student Name" }, // Maps to course
   { data: "level", title: "Level" },
   { data: "enrollmentDate", title: "Enrollment Date" },
+  { data: "status", title: "Status" },
 ];
 
 const props = defineProps({
@@ -50,6 +55,7 @@ const timesOfDay = TIMES_OF_DAY;
 const timeOptions = ref([]);
 const selectedDay = ref(0);
 const dtb = ref(null);
+const dtbStudentEnrollments = ref(null);
 const createModal = ref(null);
 const loading = ref(null);
 const options = ref({});
@@ -58,7 +64,7 @@ const selectedToDisplay = ref("");
 const showDeleteModal = ref(false);
 const showCreateModal = ref(false);
 const showViewDetail = ref(false);
-const selectedEnrollmentsToView = ref({});
+const selectedEnrollmentsToView = ref([]);
 const course = ref<Course>({
   level: 1,
   maxScore: 100,
@@ -100,7 +106,6 @@ async function handleSaveRecord(event) {
     passingRate: 1,
     courseHours: data.courseHours,
   };
-
   if (data) {
     const result = await upsertCourse(coursePayload);
     let success = result?.success;
@@ -109,7 +114,6 @@ async function handleSaveRecord(event) {
       showCreateModal.value = false;
     }
   }
-
   showCreateModal.value = false;
   clearForm();
   setTimeout(() => {
@@ -169,7 +173,7 @@ function stringifySelectedRows() {
   selectedRows = toRaw(selectedRows);
   let subjectLevels = selectedRows.map(
     (item) =>
-      `${allCapsToPascalCase(item.subject)}  ${allCapsToPascalCase(item.level)}`
+      `${allCapsToPascalCase(item.subject)} ${allCapsToPascalCase(item.level)}`
   );
   selectedToDisplay.value = subjectLevels.join(", ");
 }
@@ -234,6 +238,26 @@ function handleSelectDay(event) {
   setTimeout(() => {
     if (options.value) timeOptions.value = options.value[day];
   }, 700);
+}
+
+async function handleApproveEnrollments() {
+  let selectedRows = dtbStudentEnrollments.value.getSelectedRows();
+  selectedRows = toRaw(selectedRows);
+  if (selectedRows == null) {
+    return;
+  }
+  let selectedEnrollmentIds = selectedRows.map((item) => item.id);
+  const result = await handleApproveRequestedEnrollments(selectedEnrollmentIds);
+  if (result?.success) {
+    // getAvailableCourses();
+    showViewDetail.value = false;
+    emit("refreshHomeViewData");
+  } else {
+    notify({
+      type: "type-error",
+      message: result?.message,
+    });
+  }
 }
 </script>
 
@@ -368,6 +392,14 @@ function handleSelectDay(event) {
     />
   </template>
   <template v-if="showViewDetail">
+    <div class="datatable-action mt-4 mb-2 flex justify-end gap-2">
+      <button
+        class="text-blue-500 border border-sm rounded border-blue-500 px-3 py-1 w-fit"
+        @click="handleApproveEnrollments"
+      >
+        Approve
+      </button>
+    </div>
     <FlyonDatatable
       ref="dtbStudentEnrollments"
       :key="courses?.length"

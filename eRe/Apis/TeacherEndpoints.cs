@@ -1,14 +1,11 @@
-using System.Net;
-using System.Net.Mail;
+
 using System.Security.Claims;
 using ERE.DTO;
 using ERE.Models;
 using ERE.Repository;
 using ERE.Validators;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static ERE.Models.Course;
 
 namespace ERE.APIS;
 
@@ -16,66 +13,82 @@ public static class TeacherEndpoints
 {
     public static void MapTeacherEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/course", [Authorize] async (ITeacherRepository service, CreateCourseValidator validator, ClaimsPrincipal user, TeacherEndpoints.CreateCourseDto request) => {
+        app.MapPost("/course", [Authorize] async (ITeacherRepository service, CreateCourseValidator validator, ClaimsPrincipal user, TeacherEndpoints.CreateCourseDto request) =>
+        {
             // Validate the request
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return Results.Unauthorized();
             }
-            DTO.CreateCourseDto courseToCreate = new DTO.CreateCourseDto() {
+            DTO.CreateCourseDto courseToCreate = new DTO.CreateCourseDto()
+            {
                 UserId = identifier,
                 Level = request.Level,
                 MaxScore = request.MaxScore,
                 PassingRate = request.PassingRate,
                 CourseHours = request.CourseHours,
             };
-            
+
             var result = new Response();
-            try {
+            try
+            {
                 // validator.ValidateAndThrow(courseToCreate);
                 result = await service.UpsertCourse(courseToCreate);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
         });
 
-        app.MapPost("/course-report", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, CreateCourseReportDto request) => {
-                    // Validate the request
+        app.MapPost("/course-report", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, CreateCourseReportDto request) =>
+        {
+            // Validate the request
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return Results.Unauthorized();
-            }    
-            
+            }
+
             var result = new Response();
-            try {
+            try
+            {
                 // validator.ValidateAndThrow(courseToCreate);
                 result = await service.CreateCourseReport(request);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
-        });    
+        });
         // bulk mark course report as done or undone
-        app.MapPut("/course-report", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, UpdateCourseReportStatusDto request) => {
-                    // Validate the request
+        app.MapPut("/course-report", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, UpdateCourseReportStatusDto request) =>
+        {
+            // Validate the request
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return Results.Unauthorized();
-            }    
-            
+            }
+
             var result = new Response();
-            try {
+            try
+            {
                 // validator.ValidateAndThrow(courseToCreate);
                 result = await service.UpdateCourseReportsStatus(request);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
-        });    
+        });
 
         // app.MapPost("send-mail", (IMailService service,[FromBody] MailData email) => {
         //     try {
@@ -90,21 +103,44 @@ public static class TeacherEndpoints
         //         throw;
         //     }
         // });
-        app.MapDelete("/course", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, [FromBody] DeleteCourseDto toDeleteCourseIds) => {
+        app.MapDelete("/course", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, [FromBody] DeleteCourseDto toDeleteCourseIds) =>
+        {
             // Validate the request
             var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(identifier)) {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return Results.Unauthorized();
             }
             var result = new Response();
-            try {
+            try
+            {
                 result = await service.DeleteCourse(toDeleteCourseIds);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 result.Success = false;
                 result.Message = ex.Message;
             }
             return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
         });
+        
+         app.MapPut("/enrollments", [Authorize] async (ITeacherRepository service, ClaimsPrincipal user, EnrollmentToApprove request) => {
+                    // Validate the request
+            var identifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(identifier)) {
+                return Results.Unauthorized();
+            }    
+            
+            var result = new Response();
+            try {
+                // validator.ValidateAndThrow(courseToCreate);
+                result = await service.ApproveEnrollments(request);
+            } catch (Exception ex) {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            return result.Success == true ? Results.Ok(result) : Results.BadRequest(result);
+        });    
     }
 
     private class CreateCourseDto {

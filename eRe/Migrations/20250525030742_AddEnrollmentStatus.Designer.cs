@@ -3,6 +3,7 @@ using System;
 using ERE.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace eRe.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250525030742_AddEnrollmentStatus")]
+    partial class AddEnrollmentStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,9 +231,6 @@ namespace eRe.Migrations
                     b.Property<string>("StudentName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("SubjectId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("TeacherId")
                         .IsRequired()

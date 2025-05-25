@@ -31,10 +31,7 @@
             />
           </template>
           <template v-if="showCourseEnrollments">
-            <CourseEnrollments
-              @refreshHomeViewData="refreshHomeViewData"
-              :enrollments="enrollments"
-            />
+            <CourseEnrollments @refreshHomeViewData="refreshHomeViewData" />
           </template>
           <template v-if="showAllCourses">
             <TeacherCourseList

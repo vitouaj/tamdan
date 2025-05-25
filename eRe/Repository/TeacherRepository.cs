@@ -12,6 +12,7 @@ namespace ERE.Repository;
 public interface ITeacherRepository
 {
     Task<Response> UpsertCourse(CreateCourseDto request);
+    Task<Response> ApproveEnrollments(EnrollmentToApprove enrollmentsToApprove);
     Task<Response> DeleteCourse(DeleteCourseDto deleteDto);
     Task<Response> CreateCourseReport(CreateCourseReportDto request);
     Task<Response> UpdateCourseReportsStatus(UpdateCourseReportStatusDto request);
@@ -274,6 +275,28 @@ public class TeacherRepository(AppDbContext context, IMailService mail_service) 
         }
         return response;
             
+    }
+
+    public async Task<Response> ApproveEnrollments(EnrollmentToApprove request)
+    {
+        var response = new Response { Message = "Update failed", Success = false };
+        var enrollmentIds = request.EnrollmentIds;
+        using var transaction = await db.Database.BeginTransactionAsync();
+        try {
+            await db.Enrollments
+                .Where(e => enrollmentIds.Contains(e.Id) && e.Status != ENROLLMENT_STATUS.APPROVED)
+                .ExecuteUpdateAsync(e => e.SetProperty(p => p.Status, p => ENROLLMENT_STATUS.APPROVED));
+
+            db.SaveChanges();
+            transaction.Commit();
+            response.Message = "Update sucessfull";
+            response.Success = true;
+        }
+        catch {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        return response;
     }
 
     class CourseReportDto {

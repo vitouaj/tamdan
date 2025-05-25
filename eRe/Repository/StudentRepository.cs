@@ -6,13 +6,18 @@ using ERE.CustomExceptions;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ERE.Repository;
-public interface IStudentRepository {
+
+public interface IStudentRepository
+{
     Task<Response> EnrollCourse(List<EnrollmentDto> requests);
     Task<Response> GetAvailableCourses(string studentId);
     Task<Response> UnrollCourse(EnrollmentDto request);
     Task<Dictionary<string, List<MainReportDto>>> GetMainReports(GetMainReportDto request, Dictionary<string, string>? teacherDict);
     Task<Response> Feedback(ProvideFeedbackDto request);
     string GetStudentId(string userId);
+
+    Task<Response> GetMyEnrollments(string studentId);
+
 
 }
 public class StudentRepository(AppDbContext context) : IStudentRepository {
@@ -56,7 +61,7 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
             invalidStudentIds = missingStudentIds,
             invalidCourseIds = missingCourseIds
         };
-        response.Message = "Enrollment(s) created successfully";
+        response.Message = "Enrollment(s) requested";
         response.Success = true;
         return response;
     }
@@ -232,6 +237,34 @@ public class StudentRepository(AppDbContext context) : IStudentRepository {
         };
         response.Message = "Available courses retrieved successfully";
         response.Success = true;
+        return response;
+    }
+
+    public async Task<Response> GetMyEnrollments(string studentId)
+    {
+        var response = new Response { Success = false, Message = "Get failed" };
+        if (studentId != null)
+        {
+            var enrollments = await db.Enrollments.Where(er => er.StudentId == studentId)
+                .Select(er => new UserRepository.REnrollmentDto
+                {
+                    TeacherId = er.TeacherId,
+                    CourseId = er.CourseId,
+                    EnrollmentDate = er.EnrollmentDate.ToString(),
+                    CompletionDate = er.CompletionDate.ToString(),
+                    Status = er.Status.ToString(),
+                    CourseName = er.CourseName,
+                    Level = er.LevelId.ToString(),
+                    Subject = er.SubjectId.ToString(),
+                    StudentName = er.StudentName,
+                })
+                .ToListAsync();
+            response.Success = true;
+            response.Payload = new
+            {
+                enrollments
+            };
+        }
         return response;
     }
 }

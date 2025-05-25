@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { notify } from "./utility";
 const ERE_API_DOMAIN = "http://localhost:5137";
 
-type Method = "GET" | "POST" | "PATCH" | "DELETE";
+type Method = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 
 interface HttpRequest {
   domain?: string;
@@ -73,6 +73,12 @@ class HttpClient {
     options: Omit<HttpRequest, "method">
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...options, method: "PATCH" });
+  }
+
+  static async put<T = any>(
+    options: Omit<HttpRequest, "method">
+  ): Promise<AxiosResponse<T>> {
+    return this.request<T>({ ...options, method: "PUT" });
   }
 
   static async delete<T = any>(

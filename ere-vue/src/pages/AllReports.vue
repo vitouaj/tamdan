@@ -6,7 +6,7 @@
     />
   </template>
   <template v-else="showReportDetail">
-    <div class="grid grid-cols-4 gap-4 p-4">
+    <div class="grid grid-cols-4 sm:grid-cols-2 sm:gap-2 gap-4 p-4">
       <Card
         v-for="month in fullMonthReports"
         :data-id="month.id"

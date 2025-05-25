@@ -12,30 +12,41 @@
 */
 
 namespace ERE.Models;
+
 public class Enrollment
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string StudentId { get; set; }
     public string StudentName { get; set; }
-    public string StudentEmail {get; set;}
+    public string StudentEmail { get; set; }
     public string CourseId { get; set; }
     public LevelId LevelId { get; set; }
+    public SubjectId SubjectId { get; set; }
     public string CourseName { get; set; }
     public string TeacherId { get; set; }
     public string TeacherName { get; set; }
+    public ENROLLMENT_STATUS Status { get; set; }
     public DateTime EnrollmentDate { get; set; }
     public DateTime? CompletionDate { get; set; }
 
-    public Enrollment(Student student, Course course) {
+    public Enrollment(Student student, Course course)
+    {
         StudentId = student.Id;
         StudentName = student.Name;
         StudentEmail = student.Email;
+        SubjectId = course.Teacher__r.SubjectId;
         LevelId = course.LevelId;
         CourseId = course.Id;
+        Status = ENROLLMENT_STATUS.REQUESTED;
         CourseName = course.SubjectId.ToString() + " " + course.LevelId.ToString();
         TeacherId = course.TeacherId;
         TeacherName = course.Teacher__r.Name;
         EnrollmentDate = DateTime.Now;
     }
     public Enrollment() { }
+}
+
+public enum ENROLLMENT_STATUS
+{
+    REQUESTED, APPROVED, DENIED
 }

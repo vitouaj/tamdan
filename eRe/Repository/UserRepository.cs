@@ -205,7 +205,22 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                 })
                 .FirstOrDefaultAsync(s => s.UserId == user.Id);
             var contacts = await db.Contacts.Where(c => c.StudentId == student.Id).ToArrayAsync();
-            var enrollments = await db.Enrollments.Where(er => er.StudentId == student.Id).ToListAsync();
+            var enrollments = await db.Enrollments
+                .Where(er => er.StudentId == student.Id && er.Status == ENROLLMENT_STATUS.APPROVED)
+                .Select(e => new REnrollmentDto
+                {
+                    CourseId = e.CourseId,
+                    TeacherId = e.TeacherId,
+                    Id = e.Id,
+                    CourseName = e.CourseName,
+                    Status = e.Status.ToString(),
+                    StudentName = e.StudentName,
+                    Level = e.LevelId.ToString(),
+                    EnrollmentDate = e.EnrollmentDate.ToString(),
+                    CompletionDate = e.CompletionDate.ToString()
+                })
+                .ToListAsync();
+
             var teacherIds = enrollments.Select(er => er.TeacherId).ToList();
             var courseIds = enrollments.Select(er => er.CourseId).ToList();
             var courseMap = await db.Courses
@@ -299,6 +314,8 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
                 .Contains(e.CourseId))
                 .ToDictionaryAsync(e => e.CourseId, e => new REnrollmentDto
                 {
+                    Id = e.Id,
+                    Status = e.Status.ToString(),
                     StudentName = e.StudentName,
                     Level = e.LevelId.ToString(),
                     EnrollmentDate = e.EnrollmentDate.ToString()
@@ -486,10 +503,17 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
         public string? TeacherName { get; set; }
     }
 
-    class REnrollmentDto
+    public class REnrollmentDto
     {
+        public string? TeacherId { get; set; }
+        public string? CourseId { get; set; }
+        public string? Subject { get; set; }
+        public string? CourseName { get; set; }
+        public string? Id { get; set; }
         public string? EnrollmentDate { get; set; }
+        public string? CompletionDate { get; set; }
         public string? StudentName { get; set; }
         public string? Level { get; set; }
+        public string? Status { get; set; }
     }
 }

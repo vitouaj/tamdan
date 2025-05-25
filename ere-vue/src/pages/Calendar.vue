@@ -6,12 +6,8 @@
 import { onMounted, ref } from "vue";
 import { defineProps } from "vue";
 import { Utility } from "../api/utility";
-import { computed } from "vue";
+
 const props = defineProps({
-  courses: {
-    type: Array,
-    default: () => [],
-  },
   occupiedHours: {
     type: Array,
     default: () => [],
@@ -41,7 +37,6 @@ onMounted(() => {
   let mapEvents = props.isTeacher
     ? Utility.mapEventsOccupiedHours(props.occupiedHours, true)
     : Utility.mapEventsOccupiedHours(props.occupiedHours);
-  console.log("mapEvents", mapEvents);
   renderCalendar(mapEvents);
 });
 </script>

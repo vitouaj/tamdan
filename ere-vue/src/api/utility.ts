@@ -82,6 +82,7 @@ class Utility {
   }
 
   static allCapsToPascalCase(str) {
+    if (typeof str !== "string") return ""; // or return str;
     return str
       .toLowerCase()
       .split(/[_\s-]+/)

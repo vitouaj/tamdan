@@ -116,6 +116,11 @@ public class CreateCourseDto
     public List<CourseHour> CourseHours { get; set; } = new List<CourseHour>();
 }
 
+public class EnrollmentToApprove
+{
+    public List<string> EnrollmentIds { get; set; } = new List<string>();
+}
+
 public class DeleteCourseDto
 {
     public List<string> CourseIds { get; set; } = new List<string>();
