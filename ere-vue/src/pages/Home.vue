@@ -1,69 +1,15 @@
 <template>
-  <Navbar :user="user || ({} as User)" @goto="handleGoTo" />
-  <div class="grid grid-cols-5 gap-4 p-4">
-    <Sidebar
-      :user="user || ({} as User)"
-      @goto="handleGoTo"
-      class="col-span-1"
-    />
-    <div class="main-content-container col-span-4">
-      <div class="card w-full">
-        <div class="card-body content">
-          <template v-if="showAllReports">
-            <AllReports v-if="mainReports" :reports="mainReports" />
-          </template>
-          <template v-if="showStudentList">
-            <div class="grid grid-cols-2">
-              <StudentCard
-                @gotostudentreportlist="fiterMainReports"
-                v-if="students"
-                v-for="student in students"
-                :student="student"
-              />
-            </div>
-          </template>
-          <template v-if="showSchedules">
-            <Calendar
-              v-if="courses"
-              :isTeacher="isTeacher"
-              :courses="computedCoursesForSchedule"
-              :occupiedHours="user?.occupiedHours"
-            />
-          </template>
-          <template v-if="showCourseEnrollments">
-            <CourseEnrollments @refreshHomeViewData="refreshHomeViewData" />
-          </template>
-          <template v-if="showAllCourses">
-            <TeacherCourseList
-              v-if="courses"
-              @goback="handleGoTo"
-              @refreshHomeViewData="refreshHomeViewData"
-              :enrollments="enrollments"
-              :courses="computedCoursesDataTable"
-              :user="user"
-              :occupiedHours="user?.occupiedHours"
-            />
-          </template>
-          <template v-if="showProfile">
-            <Profile :contacts="contacts" :user="user" @goback="handleGoTo" />
-          </template>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Layout>
+    <ParentDashboard />
+    <!-- <StudentDashboard /> -->
+    <!-- <TeacherCourseList /> -->
+  </Layout>
 </template>
 
 <script setup lang="ts">
-import Navbar from "../components/Navbar.vue";
-import Sidebar from "../components/Sidebar.vue";
+import Layout from "./Layout.vue";
 import { computed, onMounted, ref } from "vue";
 import { getUser } from "../api/controllers";
-import AllReports from "./AllReports.vue";
-import Calendar from "./Calendar.vue";
-import CourseEnrollments from "./CourseEnrollments.vue";
-import Profile from "./Profile.vue";
-import StudentCard from "./StudentCard.vue";
-import TeacherCourseList from "./TeacherCourseList.vue";
 import {
   DAY_OF_WEEK,
   Utility,
@@ -71,6 +17,9 @@ import {
   // getTimesDayToDisplay,
 } from "../api/utility";
 import { CourseHour } from "./ModalContent.vue";
+import TeacherCourseList from "./TeacherCourseList.vue";
+import StudentDashboard from "../components/dashboard/StudentDashboard.vue";
+import ParentDashboard from "../components/dashboard/ParentDashboard.vue";
 
 export interface User {
   name: string;

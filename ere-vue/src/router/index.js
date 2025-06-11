@@ -2,6 +2,13 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../pages/Home.vue";
 import NotFound from "../pages/NotFound.vue";
 import Auth from "../pages/Auth.vue";
+import Login from "../pages/Login.vue";
+import Register from "../pages/Register.vue";
+import Schedules from "../pages/Schedules.vue";
+import Profile from "../pages/Profile.vue";
+import CourseDetail from "../pages/CourseDetail.vue";
+import StudentDetail from "../pages/StudentDetail.vue";
+import ReportDetails from "../pages/ReportDetails.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,9 +19,42 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/auth",
-      name: "auth",
-      component: Auth,
+      path: "/login",
+      name: "login",
+      component: Login,
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: Register,
+    },
+    {
+      path: "/schedule",
+      name: "schedule",
+      component: Schedules,
+    },
+    {
+      path: "/me",
+      name: "profile",
+      component: Profile,
+    },
+    {
+      path: "/course-detail/:courseId",
+      props: true,
+      name: "courseDetail",
+      component: CourseDetail,
+    },
+    {
+      path: "/report/:reportId",
+      props: true,
+      name: "reportDetail",
+      component: ReportDetails,
+    },
+    {
+      path: "/student/:studentId",
+      props: true,
+      name: "studentDetail",
+      component: StudentDetail,
     },
     {
       path: "/:pathMatch(.*)*",
