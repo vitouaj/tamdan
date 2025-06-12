@@ -161,7 +161,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { loadSubjectOptions } from "../api/controllers";
+import { loadSubjectOptions } from "../api/API_Calls";
 import { RegisterModel } from "./Auth.vue";
 
 const props = defineProps<{

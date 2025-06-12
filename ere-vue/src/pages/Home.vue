@@ -1,156 +1,77 @@
 <template>
-  <Layout>
-    <ParentDashboard />
-    <!-- <StudentDashboard /> -->
-    <!-- <TeacherCourseList /> -->
+  <Layout
+    :hideSchedule="doHideSchedule"
+    :showSchedule="doShowSchedule"
+    :role="role"
+  >
+    <template v-if="showSchedule">
+      <Schedules :user="payload.user" />
+    </template>
+    <template v-else="showSchedule">
+      <ParentDashboard v-if="role === 3" :payload="payload" />
+      <StudentDashboard v-if="role === 1" :payload="payload" />
+      <TeacherDashboard v-if="role === 2" :payload="payload" />
+    </template>
   </Layout>
 </template>
 
 <script setup lang="ts">
 import Layout from "./Layout.vue";
-import { computed, onMounted, ref } from "vue";
-import { getUser } from "../api/controllers";
-import {
-  DAY_OF_WEEK,
-  Utility,
-  // getCourseDayToDisplay,
-  // getTimesDayToDisplay,
-} from "../api/utility";
-import { CourseHour } from "./ModalContent.vue";
-import TeacherCourseList from "./TeacherCourseList.vue";
+import { onMounted, ref } from "vue";
+import { getUser } from "../api/API_Calls";
 import StudentDashboard from "../components/dashboard/StudentDashboard.vue";
 import ParentDashboard from "../components/dashboard/ParentDashboard.vue";
-
-export interface User {
-  name: string;
-  phone: string;
-  email: string;
-  role: Number;
-  subject: string;
-  levelId: string;
-  userId: string;
-  studentId: string;
-  createdDate: string;
-  updatedDate: string;
-  totalAbsence: Number;
-  totalScore: Number;
-  overallGrade: string;
-  averageScore: Number;
-  occupiedHours: Array<CourseHour>;
-}
-
-const showAllReports = ref(false);
-const showCourseEnrollments = ref(false);
-const showSchedules = ref(false);
-const showProfile = ref(false);
-const showStudentList = ref(false);
-const showAllCourses = ref(false);
-
-const user = ref<User>();
-const mainReportMap = ref({});
-const mainReports = ref([]);
-const enrollments = ref([]);
-const courses = ref([]);
-const contacts = ref([]);
-const students = ref([]);
-
-const computedCoursesForSchedule = computed(() => {
-  return [...courses.value];
-});
-
-const computedCoursesDataTable = computed(() => {
-  return courses.value.map((item) => {
-    return {
-      ...item,
-      subject: Utility.allCapsToPascalCase(item.subject),
-      level: Utility.allCapsToPascalCase(item.level),
-      teacherName: Utility.allCapsToPascalCase(item.teacherName),
-    };
-  });
-});
-
-const isParent = computed(() => {
-  return user.value?.role == 3;
-});
-const isTeacher = computed(() => {
-  return user.value?.role == 2;
-});
-const isStudent = computed(() => {
-  return user.value?.role == 1;
-});
+import TeacherDashboard from "../components/dashboard/TeacherDashboard.vue";
+import { showToast } from "../api/Utility";
+import { useRouter } from "vue-router";
+import Schedules from "./Schedules.vue";
 
 onMounted(async () => {
-  await initHomeData(false);
+  await initHomeData();
 });
 
-async function initHomeData(isRefresh: Boolean) {
-  let response = isRefresh ? await getUser(false) : await getUser(true);
-  let payload = response?.payload;
-  user.value = payload?.user;
-  students.value = payload?.students;
-  contacts.value = payload?.contacts;
-  courses.value = payload?.courses;
-  mainReports.value = payload?.mainReport;
-  enrollments.value = payload?.enrollments;
-  mainReportMap.value = payload?.mainReportMap;
-  if (isRefresh !== undefined && !isRefresh) {
-    resetViews();
-    if (user.value?.role == 3) {
-      showStudentList.value = true;
-    } else if (user.value?.role == 2) {
-      showAllCourses.value = true;
-    } else if (user.value?.role == 1) {
-      showAllReports.value = true;
+const router = useRouter();
+const role = ref(1); // Change this to "parent" or "student" as needed 1 = student, 2 = teacher, 3 = parent
+const payload = ref({});
+
+const showSchedule = ref(false);
+function doShowSchedule() {
+  return (showSchedule.value = true);
+}
+
+function doHideSchedule() {
+  return (showSchedule.value = false);
+}
+
+async function initHomeData() {
+  try {
+    const response = await getUser();
+    const { success } = response.data;
+    const { data } = response;
+    if (success) {
+      console.log("User data loaded successfully:", data.payload);
+      payload.value = data.payload; // Store the payload for further use
+      const { user } = payload.value;
+      role.value = user.role; // Set the role based on the user data
+    } else {
+      showToast({
+        type: "error",
+        message: data.message || "Failed to load user data.",
+        duration: 3000,
+      });
     }
+  } catch (error) {
+    console.error("Error loading user data:", error);
+    if (error.status === 401) {
+      router.push("/login");
+      return;
+    }
+    showToast({
+      type: "error",
+      message: error.message || "An error occurred while loading user data.",
+      duration: 3000,
+      stack: error.stack,
+    });
   }
-}
-function resetViews() {
-  showAllReports.value = false;
-  showCourseEnrollments.value = false;
-  showSchedules.value = false;
-  showProfile.value = false;
-  showStudentList.value = false;
-  showAllCourses.value = false;
-}
-
-async function refreshHomeViewData() {
-  await initHomeData(true);
-}
-
-function fiterMainReports(event: CustomEvent) {
-  const id = event.detail?.id;
-  let reports = mainReportMap.value[id] || [];
-  // set mainreports
-  mainReports.value = reports;
-  showAllReports.value = true;
-  showStudentList.value = false;
-}
-
-function handleGoTo(event: CustomEvent) {
-  const cmp = event.detail?.cmpName;
-  resetViews();
-  setTimeout(() => {
-    switch (cmp) {
-      case "home":
-      case "allreports":
-        showAllReports.value = true;
-        break;
-      case "studentlist":
-        showStudentList.value = true;
-        break;
-      case "teachercourselist":
-        showAllCourses.value = true;
-        break;
-      case "schedules":
-        showSchedules.value = true;
-        break;
-      case "course-enrollments":
-        showCourseEnrollments.value = true;
-        break;
-      case "me":
-        showProfile.value = true;
-        break;
-    }
-  }, 200);
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div class="bg-gray-50 font-sans p-4 w-full sm:p-6 lg:p-8">
+    <div class="bg-gray-50 font-sans">
       <div class="w-full">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Course Management</h1>
 
@@ -107,11 +107,11 @@
                       <label for="checkbox-all" class="sr-only">checkbox</label>
                     </div>
                   </th>
-                  <th scope="col" class="px-6 py-3">Subject</th>
+                  <th scope="col" class="px-6 py-3">Student</th>
                   <th scope="col" class="px-6 py-3">Course</th>
                   <th scope="col" class="px-6 py-3">Enrollment Date</th>
-                  <th scope="col" class="px-6 py-3">Completion Date</th>
-                  <th scope="col" class="px-6 py-3">Student Name</th>
+                  <th scope="col" class="px-6 py-3">Status</th>
+                  <th scope="col" class="px-6 py-3">Teacher</th>
                   <th scope="col" class="px-6 py-3">Student Email</th>
                 </tr>
               </thead>
@@ -129,10 +129,17 @@
                       >
                     </div>
                   </td>
-                  <td
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    chit soknea
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <img
+                        class="w-9 h-9 rounded-full object-cover"
+                        src="https://i.pravatar.cc/40?u=chit_soknea"
+                        alt="chit soknea avatar"
+                      />
+                      <div class="font-medium text-gray-900 whitespace-nowrap">
+                        chit soknea
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4">ENGLISH ELEVENTH</td>
                   <td class="px-6 py-4">4/23/2025</td>
@@ -158,10 +165,19 @@
                       >
                     </div>
                   </td>
-                  <td
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    <a href="/student/1">Lun Navy</a>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <img
+                        class="w-9 h-9 rounded-full object-cover"
+                        src="https://i.pravatar.cc/40?u=lun_navy"
+                        alt="Lun Navy avatar"
+                      />
+                      <div class="font-medium text-gray-900 whitespace-nowrap">
+                        <a href="/student/1" class="hover:underline"
+                          >Lun Navy</a
+                        >
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4">SCIENCE ELEVENTH</td>
                   <td class="px-6 py-4">4/23/2025</td>
@@ -187,10 +203,17 @@
                       >
                     </div>
                   </td>
-                  <td
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    Norng Sokchan
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <img
+                        class="w-9 h-9 rounded-full object-cover"
+                        src="https://i.pravatar.cc/40?u=norng_sokchan"
+                        alt="Norng Sokchan avatar"
+                      />
+                      <div class="font-medium text-gray-900 whitespace-nowrap">
+                        Norng Sokchan
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4">MATH ELEVENTH</td>
                   <td class="px-6 py-4">4/23/2025</td>

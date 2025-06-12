@@ -9,6 +9,7 @@ import Profile from "../pages/Profile.vue";
 import CourseDetail from "../pages/CourseDetail.vue";
 import StudentDetail from "../pages/StudentDetail.vue";
 import ReportDetails from "../pages/ReportDetails.vue";
+import CreateCourse from "../components/ui/CreateCourse.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: "/schedule",
       name: "schedule",
       component: Schedules,
+    },
+    {
+      path: "/create-course",
+      name: "create-course",
+      component: CreateCourse,
     },
     {
       path: "/me",

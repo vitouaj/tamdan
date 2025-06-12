@@ -7,13 +7,13 @@
       >
         <div class="px-6 py-8">
           <h1 class="text-2xl font-bold text-white">ERE System</h1>
-          <p class="text-sm text-slate-300">Teacher Portal</p>
+          <p class="text-sm text-slate-300">{{ roleDisplay }} Portal</p>
         </div>
 
         <nav class="flex-1 px-4 space-y-2">
           <a
-            href="/"
-            class="flex items-center gap-4 px-4 py-3 text-white bg-slate-900/50 border-l-4 border-blue-500 rounded-r-md"
+            @click="hideSchedule"
+            class="flex items-center gap-4 px-4 py-3 text-slate-300 hover:bg-slate-700 rounded-md"
           >
             <svg
               class="w-6 h-6"
@@ -32,7 +32,7 @@
             <span class="font-medium">Overview</span>
           </a>
           <a
-            href="/schedule"
+            @click="showSchedule"
             class="flex items-center gap-4 px-4 py-3 text-slate-300 hover:bg-slate-700 rounded-md"
           >
             <svg
@@ -86,17 +86,18 @@
           </div>
         </div>
       </aside>
-      <div class="pt-8 px-6 w-full">
+      <div class="sm:p-6 lg:p-8 w-full">
         <slot id="main--content"></slot>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="js">
+<script lang="js" setup>
+import { defineProps, onMounted } from "vue";
+import { ref } from "vue";
 const menuButton = document.getElementById("menu-button");
 const sidebar = document.getElementById("sidebar");
-
 if (menuButton != null) {
   menuButton.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
@@ -104,8 +105,38 @@ if (menuButton != null) {
   });
 }
 
-export default {
-  name: "Layout",
-  // Add your component options here
-};
+const props = defineProps({
+  role: {
+    type: String,
+  },
+  showSchedule: {
+    type: Function,
+  },
+  hideSchedule: {
+    type: Function,
+  },
+});
+
+function showSchedule() {
+  props.showSchedule();
+}
+
+function hideSchedule() {
+  props.hideSchedule();
+}
+
+const roleDisplay = ref("");
+function displayRole() {
+  if (props.role === 1) {
+    return "Student";
+  } else if (props.role === 2) {
+    return "Teacher";
+  } else {
+    return "Parent";
+  }
+}
+
+onMounted(() => {
+  roleDisplay.value = displayRole();
+});
 </script>

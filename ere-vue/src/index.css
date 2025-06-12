@@ -19,3 +19,44 @@
 .gray-out {
   color: lightgray;
 }
+
+div.notyf__toast.notyf__toast--dismissible.notyf__toast--upper.error {
+  background-color: red;
+}
+
+div.notyf__toast.notyf__toast--dismissible.notyf__toast--upper.success {
+  background-color: green;
+}
+
+div.notyf__dismiss {
+  height: 26px !important;
+  width: 26px !important;
+  border-radius: 50% !important;
+  background-color: transparent !important;
+}
+
+.notyf__toast {
+  min-width: 300px !important;
+  max-width: 700px !important;
+}
+
+.notyf__toast--dismissible .notyf__wrapper {
+  padding-right: 0 !important;
+}
+
+.notyf__message {
+  padding-right: 0 !important;
+}
+
+.notyf__dismiss {
+  position: absolute;
+  top: -14px;
+  right: 0;
+  height: 26px !important;
+  width: 26px !important;
+  background-color: transparent !important;
+}
+.notyf__dismiss-btn {
+  opacity: 100 !important;
+  border-radius: 50%;
+}

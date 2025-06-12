@@ -259,9 +259,9 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             response.Payload = new
             {
                 User = student,
-                Contacts = contacts,
                 Courses = courseMap.Values,
                 Enrollments = enrollments,
+                Contacts = contacts,
                 MainReport = result.ContainsKey(student.Id) ? result[student.Id] : new List<DTO.MainReportDto>()
             };
         }
@@ -311,22 +311,44 @@ public class UserRepository(AppDbContext context, UtilityService utils, IStudent
             // get courses with course enrollments
             var enrollments = await db.Enrollments
                 .Where(e => courseIds
-                .Contains(e.CourseId))
-                .ToDictionaryAsync(e => e.CourseId, e => new REnrollmentDto
+                .Contains(e.CourseId)).ToListAsync();
+
+            var enrollmentMap = new Dictionary<string, List<REnrollmentDto>>();
+            foreach (var enrollment in enrollments)
+            {
+                if (!enrollmentMap.ContainsKey(enrollment.CourseId))
                 {
-                    Id = e.Id,
-                    Status = e.Status.ToString(),
-                    StudentName = e.StudentName,
-                    Level = e.LevelId.ToString(),
-                    EnrollmentDate = e.EnrollmentDate.ToString()
+                    enrollmentMap[enrollment.CourseId] = new List<REnrollmentDto>();
+                }
+                enrollmentMap[enrollment.CourseId].Add(new REnrollmentDto
+                {
+                    TeacherId = enrollment.TeacherId,
+                    CourseId = enrollment.CourseId,
+                    Id = enrollment.Id,
+                    
+                    CourseName = enrollment.CourseName,
+                    Status = enrollment.Status.ToString(),
+                    StudentName = enrollment.StudentName,
+                    Level = enrollment.LevelId.ToString(),
+                    EnrollmentDate = enrollment.EnrollmentDate.ToString(),
+                    CompletionDate = enrollment.CompletionDate.ToString()
                 });
+            }
+                // .ToDictionaryAsync(e => e.CourseId, e => new REnrollmentDto
+            // {
+            //     Id = e.Id,
+            //     Status = e.Status.ToString(),
+            //     StudentName = e.StudentName,
+            //     Level = e.LevelId.ToString(),
+            //     EnrollmentDate = e.EnrollmentDate.ToString()
+            // });
 
 
             response.Payload = new
             {
                 User = teacher,
                 Courses = courseMap.Values,
-                enrollments = enrollments,
+                enrollments = enrollmentMap,
             };
         }
         else if (user.RoleId == RoleId.PARENT)

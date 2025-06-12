@@ -220,10 +220,11 @@
 
             <div class="pt-6 border-t border-gray-200 flex justify-end gap-3">
               <button
+                @click="doLogout"
                 type="button"
                 class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200"
               >
-                Cancel
+                Logout
               </button>
               <button
                 type="submit"
@@ -250,24 +251,14 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, onMounted, ref } from "vue";
-import { type User } from "./Home.vue";
-import ContactForm from "./ContactForm.vue";
 import Layout from "./Layout.vue";
-import { ContactModel } from "./Auth.vue";
-import { ROLE_MAPPER } from "../api/utility";
-const emit = defineEmits(["goback"]);
-const props = defineProps({
-  user: {
-    type: Object as () => User,
-  },
-  contacts: {
-    type: Array<ContactModel>,
-  },
-});
+import { useRouter } from "vue-router";
+import { logout } from "../api/API_Calls";
 
-const user = ref<User>();
-onMounted(() => {
-  user.value = props.user;
-});
+const router = useRouter();
+
+function doLogout() {
+  logout();
+  router.push("/login");
+}
 </script>

@@ -1,4 +1,5 @@
 <template>
+  <StateLoading :isLoading="isLoading" />
   <div
     class="bg-cover bg-center"
     style="
@@ -37,196 +38,247 @@
             </div>
 
             <form id="signup-form" action="#" method="POST">
-              <div id="step-1" class="space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <template v-if="step === 1">
+                <div id="step-1" class="space-y-5">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label
+                        for="firstname"
+                        class="block text-sm font-medium text-gray-700"
+                        >First Name</label
+                      >
+                      <input
+                        id="firstname"
+                        name="firstname"
+                        v-model="payload.firstName"
+                        type="text"
+                        autocomplete="given-name"
+                        required
+                        class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="lastname"
+                        class="block text-sm font-medium text-gray-700"
+                        >Last Name</label
+                      >
+                      <input
+                        id="lastname"
+                        name="lastname"
+                        v-model="payload.lastName"
+                        type="text"
+                        autocomplete="family-name"
+                        required
+                        class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <label
-                      for="firstname"
+                      for="email"
                       class="block text-sm font-medium text-gray-700"
-                      >First Name</label
+                      >Email</label
                     >
                     <input
-                      id="firstname"
-                      name="firstname"
-                      type="text"
-                      autocomplete="given-name"
+                      id="email"
+                      name="email"
+                      v-model="payload.email"
+                      type="email"
+                      autocomplete="email"
                       required
                       class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                     />
                   </div>
                   <div>
                     <label
-                      for="lastname"
+                      for="password"
                       class="block text-sm font-medium text-gray-700"
-                      >Last Name</label
+                      >Password</label
                     >
                     <input
-                      id="lastname"
-                      name="lastname"
-                      type="text"
-                      autocomplete="family-name"
-                      required
-                      class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    for="email"
-                    class="block text-sm font-medium text-gray-700"
-                    >Email</label
-                  >
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autocomplete="email"
-                    required
-                    class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    class="block text-sm font-medium text-gray-700"
-                    >Password</label
-                  >
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autocomplete="new-password"
-                    required
-                    class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="role"
-                    class="block text-sm font-medium text-gray-700"
-                    >Are you a student or teacher?</label
-                  >
-                  <select
-                    id="role"
-                    name="role"
-                    required
-                    class="mt-1 block w-full px-3 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  >
-                    <option value="" disabled selected>Select your role</option>
-                    <option value="Student">Student</option>
-                    <option value="Teacher">Teacher</option>
-                  </select>
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    id="next-btn"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
-                  >
-                    Next →
-                  </button>
-                </div>
-              </div>
-
-              <div id="step-2" class="hidden space-y-5">
-                <h3 class="text-md font-semibold text-gray-700 border-b pb-2">
-                  Parent/Guardian Contact Information
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label
-                      for="parent-name"
-                      class="block text-sm font-medium text-gray-700"
-                      >Full Name</label
-                    >
-                    <input
-                      id="parent-name"
-                      name="parent-name"
-                      type="text"
+                      id="password"
+                      name="password"
+                      type="password"
+                      v-model="payload.password"
+                      autocomplete="new-password"
                       required
                       class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                     />
                   </div>
                   <div>
                     <label
-                      for="parent-phone"
+                      for="phone"
                       class="block text-sm font-medium text-gray-700"
-                      >Phone Number</label
+                      >Phone</label
                     >
                     <input
-                      id="parent-phone"
-                      name="parent-phone"
+                      id="phone"
+                      name="phone"
                       type="tel"
+                      v-model="payload.phone"
+                      autocomplete="new-phone"
                       required
                       class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                     />
                   </div>
+                  <div>
+                    <label
+                      for="role"
+                      class="block text-sm font-medium text-gray-700"
+                      >Are you a student or teacher?</label
+                    >
+                    <select
+                      id="role"
+                      name="role"
+                      v-model="payload.role"
+                      autocomplete="role"
+                      required
+                      class="mt-1 block w-full px-3 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    >
+                      <option value="" disabled selected>
+                        Select your role
+                      </option>
+                      <option value="1">Student</option>
+                      <option value="2">Teacher</option>
+                    </select>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      @click="handleNextStep"
+                      id="next-btn"
+                      class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                    >
+                      Next →
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label
-                    for="parent-email"
-                    class="block text-sm font-medium text-gray-700"
-                    >Email</label
-                  >
-                  <input
-                    id="parent-email"
-                    name="parent-email"
-                    type="email"
-                    required
-                    class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  />
+              </template>
+              <template v-if="step === 2">
+                <div id="step-2" class="space-y-5">
+                  <h3 class="text-md font-semibold text-gray-700 border-b pb-2">
+                    Parent/Guardian Contact Information
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label
+                        for="first-name"
+                        class="block text-sm font-medium text-gray-700"
+                        >Firstname</label
+                      >
+                      <input
+                        id="first-name"
+                        v-model="contactPayload.firstName"
+                        name="first-name"
+                        type="text"
+                        required
+                        class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="last-name"
+                        class="block text-sm font-medium text-gray-700"
+                        >Lastname</label
+                      >
+                      <input
+                        id="last-name"
+                        v-model="contactPayload.lastName"
+                        name="last-name"
+                        type="text"
+                        required
+                        class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="parent-phone"
+                        class="block text-sm font-medium text-gray-700"
+                        >Phone Number</label
+                      >
+                      <input
+                        id="parent-phone"
+                        name="parent-phone"
+                        v-model="contactPayload.phone"
+                        type="tel"
+                        required
+                        class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      for="parent-email"
+                      class="block text-sm font-medium text-gray-700"
+                      >Email</label
+                    >
+                    <input
+                      id="parent-email"
+                      v-model="contactPayload.email"
+                      name="parent-email"
+                      type="email"
+                      required
+                      class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="address"
+                      class="block text-sm font-medium text-gray-700"
+                      >Street Address</label
+                    >
+                    <input
+                      id="address"
+                      v-model="contactPayload.address"
+                      name="address"
+                      type="text"
+                      required
+                      class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="city"
+                      class="block text-sm font-medium text-gray-700"
+                      >City</label
+                    >
+                    <input
+                      id="city"
+                      name="city"
+                      v-model="contactPayload.city"
+                      autocomplete="address-level2"
+                      type="text"
+                      required
+                      class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    />
+                  </div>
+                  <div class="flex items-center gap-4 pt-4">
+                    <button
+                      type="button"
+                      @click="handleBackStep"
+                      id="back-btn"
+                      class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      @click.prevent="doSubmitRegister"
+                      type="submit"
+                      id="finish-btn"
+                      class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                    >
+                      Create Account
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label
-                    for="address"
-                    class="block text-sm font-medium text-gray-700"
-                    >Street Address</label
-                  >
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    required
-                    class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="city"
-                    class="block text-sm font-medium text-gray-700"
-                    >City</label
-                  >
-                  <input
-                    id="city"
-                    name="city"
-                    type="text"
-                    required
-                    class="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  />
-                </div>
-                <div class="flex items-center gap-4 pt-4">
-                  <button
-                    type="button"
-                    id="back-btn"
-                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="submit"
-                    id="finish-btn"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
-                  >
-                    Create Account
-                  </button>
-                </div>
-              </div>
+              </template>
             </form>
 
             <p class="mt-6 text-center text-sm text-gray-500">
               Already have an account?
               <a
-                href="#"
+                href="/login"
                 class="font-semibold leading-6 text-blue-600 hover:text-blue-500"
                 >Sign In</a
               >
@@ -239,102 +291,90 @@
 </template>
 
 <script setup lang="ts">
-import { ref, PropType, onMounted } from "vue";
-import { ContactModel, RegisterModel } from "./Auth.vue";
-import ContactForm from "./ContactForm.vue";
-import UserRegisterForm from "./UserRegisterForm.vue";
-import { register } from "../api/controllers";
+import { ref, onMounted, computed } from "vue";
+import { doRegister } from "../api/API_Calls";
+import { ContactWrapper, RegisterWrapper } from "../api/DataWrapper";
+import StateLoading from "../components/ui/StateLoading.vue";
+import { defineEmits } from "vue";
+import { showToast, Util } from "../api/Utility";
+import { useRouter } from "vue-router";
 
-const props = defineProps({
-  registerModel: {
-    type: Object as PropType<RegisterModel>,
-    required: true,
-  },
+const payload = ref<RegisterWrapper>({
+  firstName: "",
+  lastName: "",
+  password: "",
+  email: "",
+  phone: "",
+  role: 0,
+  subject: 0,
+  levelId: 0,
+  contacts: [],
 });
 
-const emit = defineEmits();
+const router = useRouter();
+const contactPayload = ref<ContactWrapper>({
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  homeNumber: "",
+  street: "",
+  village: "",
+  commune: "",
+  district: "",
+  province: "",
+});
 
-const isStep1 = ref(true);
-const isStep2 = ref(false);
-const registerModel = ref<RegisterModel>();
-const contactModel = ref<ContactModel>();
+const isLoading = ref(false);
 
-function goToStep(step: Number) {
-  isStep1.value = false;
-  isStep2.value = false;
-  if (step == 1) {
-    isStep1.value = true;
-  } else if (step == 2) {
-    isStep2.value = true;
-  }
+function doSubmitRegister() {
+  isLoading.value = true;
+  const registerData: RegisterWrapper = {
+    ...payload.value,
+    role: parseInt(payload.value.role.toString()),
+    contacts: [Util.deepCloneData(contactPayload.value)],
+  };
+  console.log("Registering with data:", registerData);
+  doRegister(registerData)
+    .then((response) => {
+      console.log("Registration response:", response);
+      const { success, message } = response.data;
+      if (success) {
+        router.push("/login");
+      }
+    })
+    .catch((error) => {
+      console.error("Registration failed:", error);
+      showToast({
+        message:
+          error.response?.data?.message ||
+          "An error occurred during registration.",
+        type: "error",
+        stack: error.stack,
+        duration: 5000000000000000,
+      });
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
 }
 
-onMounted(() => {
-  registerModel.value = props.registerModel;
-  contactModel.value = registerModel.value.contacts[0];
-});
+const step = ref(1);
 
 function handleNextStep() {
-  if (registerModel.value?.role != 2) {
-    return goToStep(2);
+  if (payload.value.role.toString() === "1" && step.value == 1) {
+    step.value = 2;
+    return;
   }
-  handleSubmit();
+  doSubmitRegister();
 }
-
-async function handleSubmit() {
-  if (registerModel.value) {
-    console.log(registerModel.value);
-    let result = await register(registerModel.value);
-    if (result?.success) {
-      return emit("toggleSignin");
-    }
+function handleBackStep() {
+  if (step.value === 2) {
+    step.value = 1;
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const step1 = document.getElementById("step-1");
-  const step2 = document.getElementById("step-2");
-  const stepTitle = document.getElementById("step-title");
-
-  const nextBtn = document.getElementById("next-btn");
-  const backBtn = document.getElementById("back-btn");
-  const finishBtn = document.getElementById("finish-btn"); // This would be your final submit button
-
-  const roleSelect = document.getElementById("role");
-  const form = document.getElementById("signup-form");
-
-  nextBtn.addEventListener("click", () => {
-    const role = roleSelect.value;
-    // Add validation here if needed before proceeding
-
-    if (role === "Student") {
-      step1.classList.add("hidden");
-      step2.classList.remove("hidden");
-      stepTitle.textContent = "Step 2 of 2: Parent/Guardian Contact";
-    } else if (role === "Teacher") {
-      // If a teacher, we can submit the form directly from step 1
-      alert("Teacher account creation complete!");
-      // form.submit();
-    } else {
-      alert("Please select your role.");
-    }
-  });
-
-  backBtn.addEventListener("click", () => {
-    step2.classList.add("hidden");
-    step1.classList.remove("hidden");
-    stepTitle.textContent = "Step 1 of 2: Your Details";
-  });
-
-  // The finish button would trigger the form submission
-  form.addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevents default form submission for this demo
-    alert("Student account creation complete!");
-    // Here you would gather all form data and send to your server
-    // const formData = new FormData(form);
-    // for (let [key, value] of formData.entries()) {
-    //     console.log(key, value);
-    // }
-  });
-});
+const emit = defineEmits();
 </script>
+
+<style></style>

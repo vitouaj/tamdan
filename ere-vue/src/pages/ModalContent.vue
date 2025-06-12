@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { onMounted } from "vue";
-import { DAY_OF_WEEK, LEVEL } from "../api/utility";
-import { TIMES_OF_DAY } from "../api/utility";
+import { DAY_OF_WEEK, LEVEL } from "../api/Utility";
+import { TIMES_OF_DAY } from "../api/Utility";
 
 export interface Course {
   level: Number;

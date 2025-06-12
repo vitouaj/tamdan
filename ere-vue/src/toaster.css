@@ -1,0 +1,62 @@
+.notyf__toast {
+  position: relative !important; /* Make it a positioning context for the dismiss button */
+  border-radius: 8px !important;
+  padding: 16px !important;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  max-width: 400px !important;
+}
+
+/* Make the message text smaller */
+.notyf__message {
+  font-size: 14px !important; /* Smaller font size for the main message */
+  line-height: 1.4;
+  /* Add padding to the right to avoid text overlapping with the close button */
+  padding-right: 24px !important;
+}
+
+.notyf__message small {
+  font-size: 12px !important; /* Even smaller font for the stack trace */
+  opacity: 0.8;
+}
+
+/* Position the dismiss button in the top right corner */
+.notyf__dismiss-icon {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.notyf__dismiss-icon:hover {
+  opacity: 1;
+}
+
+/* --- Variant Styles --- */
+/* Default/Error Toast */
+.type-error {
+  background-color: #ef4444 !important; /* red-500 */
+  color: #ffffff !important;
+}
+.type-error .notyf__ripple {
+  background: #ffffff !important;
+}
+
+/* Success Toast */
+.type-success {
+  background-color: #22c55e !important; /* green-500 */
+  color: #ffffff !important;
+}
+.type-success .notyf__ripple {
+  background: #ffffff !important;
+}
+
+/* Warning Toast */
+.type-warning {
+  background-color: #f59e0b !important; /* amber-500 */
+  color: #000000 !important;
+}
+.type-warning .notyf__ripple {
+  background: #000000 !important;
+}

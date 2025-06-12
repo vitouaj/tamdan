@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import "./index.css";
+import "./toaster.css";
 import "flyonui/flyonui";
 import App from "./App.vue";
 import router from "./router";

@@ -1,95 +1,147 @@
 <template>
-  <section class="relative min-h-screen overflow-hidden">
+  <StateLoading :isLoading="isLoading" />
+  <div
+    class="bg-cover bg-center"
+    style="
+      background-image: url(&quot;https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop&quot;);
+    "
+  >
     <div
-      class="absolute inset-0 bg-[url('https://newsroomcambodia.com/wp-content/uploads/2020/01/1280px-School_kids_jumping_in_Cambodia_13578591625.jpg')] bg-cover bg-center bg-no-repeat blur-sm"
-    ></div>
-
-    <div class="absolute inset-0 bg-black bg-opacity-30"></div>
-
-    <div
-      class="relative z-10 flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0"
+      class="flex items-center justify-center min-h-screen bg-slate-900 bg-opacity-50"
     >
-      <div class="bg-opacity-60 bg-gray-300 rounded-lg p-6 w-1/4">
-        <h1 class="text-2xl py-4 font-bold text-gray-900">Sign In</h1>
-        <form class="space-y-4 md:space-y-6" action="#">
-          <div>
-            <label for="email" class="block mb-2 text-sm font-medium"
-              >Your email</label
-            >
-            <input
-              type="email"
-              name="email"
-              v-model="emailOrPhoneNumber"
-              id="email"
-              class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="name@company.com"
-            />
+      <main
+        class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 rounded-xl shadow-2xl overflow-hidden"
+      >
+        <div
+          class="hidden lg:flex flex-col justify-center text-white p-12 bg-blue-800 bg-opacity-80 backdrop-blur-sm"
+        >
+          <div class="space-y-4">
+            <h1 class="text-4xl font-extrabold tracking-tight">
+              Welcome Back to ERE Learning System
+            </h1>
+            <p class="text-blue-100 leading-relaxed">
+              Continue your educational journey with our comprehensive learning
+              platform designed for students, teachers, and parents.
+            </p>
           </div>
-          <div>
-            <label for="password" class="block mb-2 text-sm font-medium"
-              >Password</label
-            >
-            <input
-              type="password"
-              name="password"
-              v-model="password"
-              id="password"
-              placeholder="••••••••"
-              class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="flex items-start">
-              <div class="flex items-center h-5">
-                <input
-                  id="remember"
-                  aria-describedby="remember"
-                  type="checkbox"
-                  class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                />
-              </div>
-              <div class="ml-3 text-sm">
-                <label for="remember" class="text-black">Remember me</label>
-              </div>
+        </div>
+
+        <div class="bg-white p-8 sm:p-12">
+          <div class="w-full">
+            <div class="text-center mb-8">
+              <h2 class="text-3xl font-bold text-gray-800">Sign In</h2>
+              <p class="text-gray-500 mt-2">Access your student portal.</p>
             </div>
-            <a href="#" class="text-sm font-medium text-black hover:underline"
-              >Forgot password?</a
-            >
+
+            <form action="#" method="POST" class="space-y-5">
+              <div>
+                <label
+                  for="username"
+                  class="block text-sm font-medium text-gray-700"
+                  >Username</label
+                >
+                <div class="mt-1">
+                  <input
+                    id="username"
+                    name="username"
+                    v-model="payload.emailOrPhoneNumber"
+                    type="email"
+                    autocomplete="email"
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    placeholder="name@company.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  for="password"
+                  class="block text-sm font-medium text-gray-700"
+                  >Password</label
+                >
+                <div class="mt-1">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    v-model="payload.password"
+                    autocomplete="current-password"
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end">
+                <div class="text-sm">
+                  <a
+                    href="#"
+                    class="font-medium text-blue-600 hover:text-blue-500"
+                    >Forgot Password?</a
+                  >
+                </div>
+              </div>
+
+              <div>
+                <button
+                  @click.prevent="submitLogin"
+                  type="submit"
+                  class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                >
+                  Sign In →
+                </button>
+              </div>
+            </form>
+
+            <div class="mt-6">
+              <p class="mt-8 text-center text-sm text-gray-500">
+                Don't have an account?
+                <a
+                  href="/register"
+                  class="font-semibold leading-6 text-blue-600 hover:text-blue-500"
+                  >Sign Up</a
+                >
+              </p>
+            </div>
           </div>
-          <button
-            @click.stop.prevent="submitLogin"
-            class="w-full text-white bg-primary hover:bg-white-400 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-          >
-            Sign in
-          </button>
-          <p class="text-sm font-light text-black">
-            Don’t have an account yet?
-            <a
-              @click="emit('toggleRegister')"
-              class="font-medium text-primary-600 cursor-pointer dark:text-primary-500"
-              >Sign up</a
-            >
-          </p>
-        </form>
-      </div>
+        </div>
+      </main>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { login } from "../api/controllers";
+import { doLogin } from "../api/API_Calls";
+import { LoginWrapper } from "../api/DataWrapper";
+import { Util } from "../api/Utility";
+import StateLoading from "../components/ui/StateLoading.vue";
+import { useRouter } from "vue-router";
 
-let emailOrPhoneNumber = ref("");
-let password = ref("");
+const payload = ref<LoginWrapper>({
+  emailOrPhoneNumber: "",
+  password: "",
+});
+
+const router = useRouter();
+const isLoading = ref(false);
 
 async function submitLogin() {
-  let payload = {
-    emailOrPhoneNumber: emailOrPhoneNumber.value,
-    password: password.value,
-  };
-  await login(payload);
+  isLoading.value = true;
+  let clonedPayload = Util.deepCloneData(payload?.value);
+  try {
+    let { data } = await doLogin(clonedPayload);
+    let { success, payload } = data;
+    if (success) {
+      window.sessionStorage.setItem("ere-token", payload.token);
+      router.push({ name: "home" });
+    }
+  } catch (error) {
+    console.error("Login failed:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
-
-const emit = defineEmits();
 </script>
